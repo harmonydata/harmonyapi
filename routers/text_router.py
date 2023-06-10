@@ -8,6 +8,10 @@ import numpy as np
 from fastapi import APIRouter
 from fastapi import Body
 
+import sys
+
+sys.path.append("./harmony/src")
+
 from harmony import convert_files_to_instruments
 from harmony.matching.default_matcher import match_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody, Question
