@@ -1,4 +1,4 @@
-# Harmony API and Python library
+# Harmony API 
 
 <!-- badges: start -->
 ![my badge](https://badgen.net/badge/Status/In%20Development/orange)
@@ -16,6 +16,10 @@ You can contact Harmony team at https://harmonydata.org/, or Thomas Wood at http
 You can raise an issue in the [issue tracker](https://github.com/harmonydata/harmony/issues), and you can open a [pull request](https://github.com/harmonydata/harmony/pulls).
 
 Please contact us at  https://harmonydata.org/contact or write to thomas@fastdatascience.com if you would like to be involved in the project.
+
+## Looking for the Harmony Python library?
+
+Please visit https://github.com/harmonydata/harmony
 
 ## Looking for the original (Plotly Dash-based) Harmony?
 
