@@ -39,6 +39,58 @@ There is a live demo at: https://app.harmonydata.org/
 
 Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.org/how-does-harmony-work/ 
 
+# Harmony FastAPI API implementation
+
+Architecture of the FastAPI implementation:
+
+![Screenshot](images/harmony_architecture_fastapi.png)
+
+## Getting started: running the API using Docker
+
+A prerequisite is Tika, which is a PDF parsing library. This must run as a server in Java. We use the Tika Python bindings.
+
+### 1. Run Tika
+
+Download and install Java if you don't have it already. Download and install Apache Tika and run it on your computer https://tika.apache.org/download.html
+
+```
+java -jar tika-server-standard-2.3.0.jar
+```
+
+### 2. Copy the Harmony library into this directory
+
+```
+rm -rf harmony
+cp -r ../harmony_pypi_package/src/harmony/ ./
+```
+
+### 3. Build Docker container
+
+```
+docker build -t harmonyapi .
+```
+
+### 4. Run Docker container
+
+Don't forget to expose port 8080:
+
+```
+docker run -p 8080:80 harmonyapi
+```
+
+You should now be able to visit http://0.0.0.0:8080/docs and view the data.
+
+# MHC data
+
+If you have Mental Health Catalogue data, put it in a data folder e.g. `/data` and set environment variable `DATA_PATH`.
+
+## Deployment
+
+A deployment script for Microsoft Azure is provided in `build_deploy.sh`.
+
+There is also a Github Action script to deploy to Azure in `../.github/workflows/`.
+
+
 # Getting started
 
 ## Installing Python library
@@ -174,17 +226,10 @@ curl -X 'POST' \
 }'
 ```
 
-## Fast API and Docker
 
-There is a Docker API in `/harmony_fastapi`.
+## Alternative deployment on AWS Lambda
 
-Please see README [here](harmony_fastapi/README.md).
-
-![Screenshot](images/harmony_architecture_fastapi.png)
-
-## Deployment on AWS Lambda
-
-For economy, the deployment has been divided into four AWS Lambda functions.
+There is an alternative serverless deployment set up. The deployment has been divided into four AWS Lambda functions.
 
 ![Screenshot](images/deployed_harmony_architecture.png)
 
