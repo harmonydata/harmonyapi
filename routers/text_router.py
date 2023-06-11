@@ -23,6 +23,8 @@ mhc_questions = []
 mhc_all_metadatas = []
 mhc_embeddings = np.zeros((0, 0))
 
+example_instruments = []
+
 try:
     data_path = os.getenv("DATA_PATH")
     with open(data_path + "/mhc_questions.json",
@@ -41,6 +43,15 @@ try:
         mhc_embeddings = np.load(f)
 except:
     print("Could not load MHC embeddings ", str(os.getcwd()))
+
+
+
+
+with open(str(os.getcwd()) + "/example_questionnaires.json",
+          "r", encoding="utf-8") as f:
+    for l in f:
+        instrument = Instrument.parse_raw(l)
+        example_instruments.append(instrument)
 
 
 @router.post(
@@ -142,3 +153,15 @@ def match(match_body: MatchBody) -> MatchResponse:
     response = MatchResponse(questions=questions, matches=matches_jsonifiable, query_similarity=query_similarity)
 
     return response
+
+
+
+@router.post(
+    path="/examples"
+)
+def get_example_instruments() -> List[Instrument]:
+    """
+    Get example instruments
+    """
+
+    return example_instruments
