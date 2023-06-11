@@ -5,8 +5,13 @@ name: Build and deploy container app to Azure Web App - wellcomeharmony
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+    paths-ignore:
+      - README.md
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - README.md
   workflow_dispatch:
 
 jobs:
@@ -35,6 +40,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build
     environment:
       name: 'production'
