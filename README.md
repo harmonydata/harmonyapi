@@ -105,7 +105,9 @@ You can read the user guide at [./harmony_pypi_package/README.md](harmony_pypi_p
 
 ## Calling the Harmony API
 
-To process a file
+### Parsing a raw file into an Instrument
+
+If you want to read in a raw (unstructured) PDF or Excel file, you can do this via a POST request to the REST API. This will convert the file into an Instrument object in JSON.
 
 ```
 curl -X 'POST' \
@@ -135,8 +137,41 @@ curl -X 'POST' \
 ]'
 ```
 
-To match items:
+**Example response from the /parse endpoint:**
 
+```
+[
+  {
+    "file_id": "fd60a9a64b1b4078a68f4bc06f20253c",
+    "instrument_id": "7829ba96f48e4848abd97884911b6795",
+    "instrument_name": "GAD-7 English",
+    "file_name": "GAD-7.pdf",
+    "file_type": "pdf",
+    "file_section": "GAD-7 English",
+    "language": "en",
+    "study": "MCS",
+    "sweep": "Sweep 1",
+    "questions": [
+      {
+        "question_no": "1",
+        "question_intro": "Over the last two weeks, how often have you been bothered by the following problems?",
+        "question_text": "Feeling nervous, anxious, or on edge",
+        "options": [
+          "Not at all",
+          "Several days",
+          "More than half the days",
+          "Nearly every day"
+        ],
+        "source_page": 0
+      }
+    ]
+  }
+]
+```
+
+### Matching instruments
+
+You can request the similarities between instruments with a second POST request:
 
 ```
 curl -X 'POST' \
@@ -222,6 +257,29 @@ curl -X 'POST' \
     "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
   }
 }'
+```
+
+**Example response**
+
+The response contains a dictionary with three key-value pairs: `questions` (the questions matched in order), `matches` (the matrix of matches between all items), and `query_similarity` (the degree of similarity to the query term).
+
+```
+{
+  "questions": [
+    ...
+  ],
+  "matches": [
+    [
+      1.0000001192092896,
+      ...
+      0.9999998807907104
+    ]
+  ],
+  "query_similarity": [
+    0.7244994640350342,
+    ...
+  ]
+}
 ```
 
 ## Alternative serverless deployment on AWS Lambda
