@@ -109,7 +109,7 @@ To process a file
 
 ```
 curl -X 'POST' \
-  'https://rumg2mpdfd.execute-api.eu-west-2.amazonaws.com/parse' \
+  'https://api.harmonydata.org/text/parse' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
@@ -121,10 +121,8 @@ curl -X 'POST' \
   }
 ]'
 
-
-
 curl -X 'POST' \
-  'https://rumg2mpdfd.execute-api.eu-west-2.amazonaws.com/parse' \
+  'https://api.harmonydata.org/text/parse' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
@@ -142,7 +140,7 @@ To match items:
 
 ```
 curl -X 'POST' \
-  'https://rumg2mpdfd.execute-api.eu-west-2.amazonaws.com/match' \
+  'https://api.harmonydata.org/text/match' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -226,10 +224,9 @@ curl -X 'POST' \
 }'
 ```
 
+## Alternative serverless deployment on AWS Lambda
 
-## Alternative deployment on AWS Lambda
-
-There is an alternative serverless deployment set up. The deployment has been divided into four AWS Lambda functions.
+This repository also contains code for an alternative serverless deployment on AWS Lambda. The deployment has been divided into four AWS Lambda functions, managed by Terraform. Please refer to folder `serverless_deployment` for details.
 
 ![Screenshot](images/deployed_harmony_architecture.png)
 
