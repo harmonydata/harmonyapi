@@ -1,5 +1,6 @@
 FROM python:3.10
 
+RUN apt-get update
 RUN apt install tesseract-ocr -y
 RUN pip install sentence-transformers==2.2.2
 RUN python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')"
