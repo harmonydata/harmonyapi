@@ -3,7 +3,7 @@ FROM python:3.10
 RUN apt-get update
 #RUN apt-get install tesseract-ocr -y
 # Needed for Camelot
-RUN apt-get install ffmpeg libsm6 libxext6 ghostscript -y
+#RUN apt-get install ffmpeg libsm6 libxext6 ghostscript -y
 #RUN pip install sentence-transformers==2.2.2
 #RUN python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')"
 
