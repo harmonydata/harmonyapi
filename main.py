@@ -2,11 +2,6 @@ import os
 
 from azure.storage.blob import ContainerClient
 
-print ("Contents of tmp", os.listdir("/tmp"))
-try:
-    print ("Contents of data", os.listdir("/data"))
-except:
-    print ("No contents")
 
 container = ContainerClient.from_connection_string(os.getenv("AZURE_STORAGE_CONNECTION_STRING"), "mhc")
 
@@ -20,6 +15,12 @@ for blob in generator:
     with open(file=output_file_name, mode="wb") as sample_blob:
         download_stream = container.download_blob(blob)
         sample_blob.write(download_stream.readall())
+
+print ("Contents of tmp", os.listdir("/tmp"))
+try:
+    print ("Contents of data", os.listdir("/data"))
+except:
+    print ("No contents")
 
 import uvicorn
 from fastapi import FastAPI
