@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
    api:
-     image: fastdatascience/harmonyapi:20230623212930_bcb1c3f
+     image: fastdatascience/harmonyapi:latest
      depends_on:
        - tika
      ports:
