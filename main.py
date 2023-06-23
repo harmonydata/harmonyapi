@@ -2,6 +2,12 @@ import os
 
 from azure.storage.blob import ContainerClient
 
+print ("Contents of tmp", os.listdir("/tmp"))
+try:
+    print ("Contents of data", os.listdir("/data"))
+except:
+    print ("No contents")
+
 container = ContainerClient.from_connection_string(os.getenv("AZURE_STORAGE_CONNECTION_STRING"), "mhc")
 
 generator = container.list_blobs("")
