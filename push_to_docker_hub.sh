@@ -3,6 +3,3 @@ export COMMIT_ID=`git show -s --format=%ci_%h | sed s/[^_a-z0-9]//g | sed s/0[01
 docker build -t harmonyapi --build-arg COMMIT_ID=$COMMIT_ID .
 docker tag harmonyapi fastdatascience/harmonyapi:$COMMIT_ID
 docker push fastdatascience/harmonyapi:$COMMIT_ID
-
-docker tag harmonyapi fastdatascience/harmonyapi:latest
-docker push fastdatascience/harmonyapi:latest
