@@ -4,3 +4,5 @@ docker build -t harmonyapi --build-arg COMMIT_ID=$COMMIT_ID .
 docker tag harmonyapi fastdatascience/harmonyapi:$COMMIT_ID
 docker push fastdatascience/harmonyapi:$COMMIT_ID
 
+docker tag harmonyapi fastdatascience/harmonyapi:latest
+docker push fastdatascience/harmonyapi:latest
