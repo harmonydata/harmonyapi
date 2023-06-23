@@ -1,27 +1,5 @@
 import os
 
-from azure.storage.blob import ContainerClient
-
-
-container = ContainerClient.from_connection_string(os.getenv("AZURE_STORAGE_CONNECTION_STRING"), "mhc")
-
-generator = container.list_blobs("")
-for blob in generator:
-    output_file_name = "/tmp/" + blob.name
-    folder = os.path.dirname(output_file_name)
-    isExist = os.path.exists(folder)
-    if not isExist:
-        os.makedirs(folder)
-    with open(file=output_file_name, mode="wb") as sample_blob:
-        download_stream = container.download_blob(blob)
-        sample_blob.write(download_stream.readall())
-
-print ("Contents of tmp", os.listdir("/tmp"))
-try:
-    print ("Contents of data", os.listdir("/data"))
-except:
-    print ("No contents")
-
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
