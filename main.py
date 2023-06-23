@@ -1,19 +1,12 @@
-import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from core.settings import settings
-from routers.health_check_router import router as health_check_router
-from routers.info_router import router as info_router
-from routers.text_router import router as text_router
-from azure.storage.blob import ContainerClient
 import os
+
+from azure.storage.blob import ContainerClient
 
 container = ContainerClient.from_connection_string(os.getenv("AZURE_STORAGE_CONNECTION_STRING"), "mhc")
 
 generator = container.list_blobs("")
 for blob in generator:
-    output_file_name = "/tmp/"  + blob.name
+    output_file_name = "/tmp/" + blob.name
     folder = os.path.dirname(output_file_name)
     isExist = os.path.exists(folder)
     if not isExist:
@@ -22,6 +15,14 @@ for blob in generator:
         download_stream = container.download_blob(blob)
         sample_blob.write(download_stream.readall())
 
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from core.settings import settings
+from routers.health_check_router import router as health_check_router
+from routers.info_router import router as info_router
+from routers.text_router import router as text_router
 
 description = """
 Documentation for Harmony API.
