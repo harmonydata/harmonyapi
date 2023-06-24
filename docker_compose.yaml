@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
    api:
-     image: fastdatascience/harmonyapi:latest
+     image: fastdatascience/harmonyapi:20230624025714_6c42c7a
      depends_on:
        - tika
      ports:
@@ -10,10 +10,13 @@ services:
      restart: always
      environment:
        DATA_PATH: /data
-
+       SENTENCE_TRANSFORMER_PATH: /data/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+       TIKA_SERVER_ENDPOINT: http://tika:9998
+     volumes:
+        - harmonyapimount:/data
 
    tika:
      image: apache/tika:2.8.0.0-full
      ports:
        - "9998:9998"
-     restart: always
+     restart: always 
