@@ -12,7 +12,7 @@ import sys
 
 sys.path.append("./harmony/src")
 
-from harmony import convert_files_to_instruments
+from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.matching.default_matcher import match_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody, Question
 from harmony.schemas.responses.text import MatchResponse
@@ -26,7 +26,7 @@ mhc_embeddings = np.zeros((0, 0))
 example_instruments = []
 
 try:
-    data_path = os.getenv("DATA_PATH", ".")
+    data_path = os.getenv("HARMONY_DATA_PATH", ".")
     with open(data_path + "/mhc_questions.json",
               "r", encoding="utf-8") as f:
         for l in f:
