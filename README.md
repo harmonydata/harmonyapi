@@ -86,12 +86,13 @@ If you have Mental Health Catalogue data, put it in a data folder e.g. `/data` a
 
 ## Deployment
 
-A deployment script for Microsoft Azure is provided in `build_deploy.sh`.
+Harmony is deployed with Docker Compose - see `docker_compose.yml`.
+
+A deployment script for Docker/Azure is provided in `push_to_docker_hub.sh`.
 
 There is also a Github Action script to deploy to Azure in `../.github/workflows/`.
 
 The deployed Harmony uses an Azure Function to run spaCy, available in the repository here: https://github.com/harmonydata/spacyfunctionapp
-
 
 # Getting started
 
