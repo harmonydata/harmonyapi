@@ -26,7 +26,7 @@ mhc_embeddings = np.zeros((0, 0))
 example_instruments = []
 
 try:
-    data_path = os.getenv("DATA_PATH")
+    data_path = os.getenv("DATA_PATH", ".")
     with open(data_path + "/mhc_questions.json",
               "r", encoding="utf-8") as f:
         for l in f:

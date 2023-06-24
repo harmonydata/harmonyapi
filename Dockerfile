@@ -19,6 +19,5 @@ EXPOSE 80
 
 ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
-ENV DATA_PATH=.
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
