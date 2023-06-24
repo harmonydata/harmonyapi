@@ -11,15 +11,16 @@ from diagrams.onprem.inmemory import Redis
 from diagrams.azure.compute import FunctionApps
 from diagrams.azure.compute import AppServices
 from diagrams.azure.database import BlobStorage
+from diagrams.azure.compute import FunctionApps
 
 with Diagram("Harmony architecture Azure", show=False):
     browser = Tablet("Front end (React)")
     with Cluster("harmonyvirtualnetwork"):
         fastapi = AppServices("harmonyapi\nApp service")
         tika = AppServices("harmonytika\nApp service")
-        redis = Redis("harmonyredis\nAzure Cache for Redis")
+        f = FunctionApps("harmonyspacy\nFunction app wrapping spaCy")
         storage = BlobStorage("harmonystorage\nStorage account")
 
     browser >> fastapi >> tika
-    fastapi >> redis
+    fastapi >> f
     fastapi >> storage

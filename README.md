@@ -41,9 +41,9 @@ Harmony compares questions from different instruments by converting them to a ve
 
 # Harmony FastAPI API implementation
 
-Architecture of the FastAPI implementation:
+Architecture of the Harmony implementation on Azure with FastAPI:
 
-![Screenshot](images/harmony_architecture_fastapi.png)
+![Screenshot](images/harmony_architecture_azure.png)
 
 ## Getting started: running the API using Docker
 
@@ -89,6 +89,8 @@ If you have Mental Health Catalogue data, put it in a data folder e.g. `/data` a
 A deployment script for Microsoft Azure is provided in `build_deploy.sh`.
 
 There is also a Github Action script to deploy to Azure in `../.github/workflows/`.
+
+The deployed Harmony uses an Azure Function to run spaCy, available in the repository here: https://github.com/harmonydata/spacyfunctionapp
 
 
 # Getting started
