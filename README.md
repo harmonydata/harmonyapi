@@ -57,20 +57,13 @@ Download and install Java if you don't have it already. Download and install Apa
 java -jar tika-server-standard-2.3.0.jar
 ```
 
-## 2. Copy the Harmony library into this directory
-
-```
-rm -rf harmony
-cp -r ../harmony_pypi_package/src/harmony/ ./
-```
-
-## 3. Build Docker container
+## 2. Build Docker container
 
 ```
 docker build -t harmonyapi .
 ```
 
-## 4. Run Docker container
+## 3. Run Docker container
 
 Don't forget to expose port 8080:
 
