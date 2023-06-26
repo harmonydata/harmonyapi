@@ -35,11 +35,11 @@ There is a live demo at: https://app.harmonydata.org/
 
 ![Screenshot](images/screenshot1.png)
 
-# How does Harmony work in layman's terms?
+## How does Harmony work in layman's terms?
 
 Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.org/how-does-harmony-work/ 
 
-## Getting started: running and developing the API on your computer using Docker
+# Getting started: running and developing the API on your computer using Docker
 
 A prerequisite is Tika, which is a PDF parsing library. This must run as a server in Java. We use the Tika Python bindings.
 
@@ -49,7 +49,7 @@ First, clone the API and make sure to clone with `--recurse-submodules`.
 git clone --recurse-submodules git@github.com:harmonydata/harmonyapi.git
 ```
 
-### 1. Run Tika
+## 1. Run Tika
 
 Download and install Java if you don't have it already. Download and install Apache Tika and run it on your computer https://tika.apache.org/download.html
 
@@ -57,20 +57,20 @@ Download and install Java if you don't have it already. Download and install Apa
 java -jar tika-server-standard-2.3.0.jar
 ```
 
-### 2. Copy the Harmony library into this directory
+## 2. Copy the Harmony library into this directory
 
 ```
 rm -rf harmony
 cp -r ../harmony_pypi_package/src/harmony/ ./
 ```
 
-### 3. Build Docker container
+## 3. Build Docker container
 
 ```
 docker build -t harmonyapi .
 ```
 
-### 4. Run Docker container
+## 4. Run Docker container
 
 Don't forget to expose port 8080:
 
