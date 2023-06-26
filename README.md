@@ -39,7 +39,50 @@ There is a live demo at: https://app.harmonydata.org/
 
 Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.org/how-does-harmony-work/ 
 
+# Architecture of deployed Harmony API server
+
+Harmony is deployed with Docker Compose - see `docker_compose.yml`.
+
+## MHC data
+
+When the app is run, there is an environment variable `HARMONY_DATA_PATH` which is set to `/data` on the production server, and that's where you need to put any data files. But you could set it to anything you like on your local machine e.g. `/home/xxx/data/` and put the files there and it will find them.
+
+These 3 files are the files it looks for in the /data folder, although the app will run without them. It's a cached version of the Mental Health Catalogue:
+
+```
+mhc_all_metadatas.json
+mhc_embeddings.npy
+mhc_questions.json
+```
+
+When Harmony is deployed to Azure, there is an Azure blob storage which is mounted under `/data`.
+
+## Environment variables
+
+There are also other environment variables which tell the API where to look to load the sentence transformer or contact Tika:
+
+```
+     environment:
+       HARMONY_DATA_PATH: /data
+       HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
+       TIKA_SERVER_ENDPOINT: http://tika:9998
+```
+
+You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will work without it (it will download the sentence transformer from HuggingFace Hub, etc).
+
+The deployed Harmony uses an Azure Function to run spaCy, available in the repository here: https://github.com/harmonydata/spacyfunctionapp
+
+You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will work without it (it will download the sentence transformer from HuggingFace Hub, etc).
+
+So to run locally with Docker Compose you can do 
+
+```
+docker compose up
+```
+
 # Harmony FastAPI API implementation
+
+If you are not running with Docker, you can run the individual components of the Harmony API separately.
 
 Architecture of the Harmony implementation on Azure with FastAPI:
 
@@ -79,28 +122,6 @@ docker run -p 8080:80 harmonyapi
 ```
 
 You should now be able to visit http://0.0.0.0:8080/docs and view the data.
-
-# MHC data
-
-If you have Mental Health Catalogue data, put it in a data folder e.g. `/data` and set environment variable `DATA_PATH`.
-
-## Deployment
-
-Harmony is deployed with Docker Compose - see `docker_compose.yml`.
-
-A deployment script for Docker/Azure is provided in `push_to_docker_hub.sh`.
-
-There is also a Github Action script to deploy to Azure in `../.github/workflows/`.
-
-The deployed Harmony uses an Azure Function to run spaCy, available in the repository here: https://github.com/harmonydata/spacyfunctionapp
-
-You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will work without it (it will download the sentence transformer from HuggingFace Hub, etc).
-
-```
-HARMONY_DATA_PATH: /data
-HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
-TIKA_SERVER_ENDPOINT: http://tika:9998
-```
 
 # Getting started
 
