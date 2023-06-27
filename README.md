@@ -49,6 +49,8 @@ First, clone the API and make sure to clone with `--recurse-submodules`.
 git clone --recurse-submodules git@github.com:harmonydata/harmonyapi.git
 ```
 
+The Harmony API includes the `harmony` repo as a submodule using its SSH clone address. So for this clone to work you will may to enable SSH access on your Github account (i.e. add a public key to https://github.com/settings/keys. If you get an access error when trying to clone the repo then that is probably what has gone wrong.)
+
 ## 1. Run Tika
 
 Download and install Java if you don't have it already. Download and install Apache Tika and run it on your computer https://tika.apache.org/download.html
