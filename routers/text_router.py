@@ -156,10 +156,10 @@ def match(match_body: MatchBody) -> MatchResponse:
     return response
 
 
-@router.post(path="/vector")
-def get_texts_vectors(texts: List[str]) -> List[List[float]]:
+@router.post(path="/vectors")
+def get_vectors(texts: List[str]) -> List[List[float]]:
     """
-    Get texts vectors
+    Get vectors
     """
 
     all_vectors = convert_texts_to_vector(texts=np.array(texts, dtype=str)).tolist()
