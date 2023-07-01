@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import uuid
 from typing import Annotated
 from typing import List
@@ -7,12 +8,13 @@ from typing import List
 import numpy as np
 from fastapi import APIRouter
 from fastapi import Body
-from harmony.matching.default_matcher import match_instruments, convert_texts_to_vector
+
+sys.path.append("./harmony/src")
+
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
+from harmony.matching.default_matcher import match_instruments, convert_texts_to_vector
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody, Question
 from harmony.schemas.responses.text import MatchResponse
-
-# sys.path.append("./harmony/src")
 
 router = APIRouter(prefix="/text")
 
@@ -123,6 +125,7 @@ def parse_instruments(
 def match(match_body: MatchBody) -> MatchResponse:
     """
     Match instruments
+
     """
 
     # Assign any missing IDs
@@ -156,6 +159,15 @@ def match(match_body: MatchBody) -> MatchResponse:
     return response
 
 
+@router.post(path="/examples")
+def get_example_instruments() -> List[Instrument]:
+    """
+    Get example instruments
+    """
+
+    return example_instruments
+
+
 @router.post(path="/vectors")
 def get_vectors(texts: List[str]) -> List[List[float]]:
     """
@@ -165,12 +177,3 @@ def get_vectors(texts: List[str]) -> List[List[float]]:
     all_vectors = convert_texts_to_vector(texts=np.array(texts, dtype=str)).tolist()
 
     return all_vectors
-
-
-@router.post(path="/examples")
-def get_example_instruments() -> List[Instrument]:
-    """
-    Get example instruments
-    """
-
-    return example_instruments
