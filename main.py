@@ -3,6 +3,7 @@ import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from core.settings import settings
 from routers.health_check_router import router as health_check_router
@@ -41,10 +42,13 @@ def configure_app():
         allow_headers=settings.CORS["allow_headers"],
     )
 
+    # Add gzip middleware
+    app.add_middleware(GZipMiddleware)
+
     # Include routers
     app.include_router(health_check_router, tags=["Health Check"])
-    app.include_router(text_router, tags=['Text'])
-    app.include_router(info_router, tags=['Info'])
+    app.include_router(text_router, tags=["Text"])
+    app.include_router(info_router, tags=["Info"])
 
     return app, settings
 
@@ -56,5 +60,5 @@ if __name__ == "__main__":
         "main:app",
         host=settings.SERVER_HOST,
         port=settings.PORT,
-        reload=settings.RELOAD
+        reload=settings.RELOAD,
     )
