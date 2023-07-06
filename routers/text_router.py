@@ -12,7 +12,7 @@ from fastapi import Body
 sys.path.append("./harmony/src")
 
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
-from harmony.matching.default_matcher import match_instruments, convert_texts_to_vector
+from harmony.matching.default_matcher import match_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody, Question
 from harmony.schemas.responses.text import MatchResponse
 
@@ -166,14 +166,3 @@ def get_example_instruments() -> List[Instrument]:
     """
 
     return example_instruments
-
-
-@router.post(path="/vectors")
-def get_vectors(texts: List[str]) -> List[List[float]]:
-    """
-    Get vectors
-    """
-
-    all_vectors = convert_texts_to_vector(texts=np.array(texts, dtype=str)).tolist()
-
-    return all_vectors
