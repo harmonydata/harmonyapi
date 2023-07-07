@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 from pydantic import BaseSettings
 
@@ -50,4 +51,4 @@ def get_settings():
     return settings_type[env]
 
 
-settings: Settings = get_settings()
+settings: Union[DevSettings | ProdSettings] = get_settings()

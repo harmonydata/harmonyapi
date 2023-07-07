@@ -9,6 +9,9 @@ import numpy as np
 from fastapi import APIRouter
 from fastapi import Body
 
+from services.instruments_cache import InstrumentsCache
+from utils import cache_helper
+
 sys.path.append("./harmony/src")
 
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
@@ -118,7 +121,34 @@ def parse_instruments(
         if file.file_id is None:
             file.file_id = uuid.uuid4().hex
 
-    return convert_files_to_instruments(files)
+    instruments: List[Instrument] = []
+
+    instruments_cache = InstrumentsCache()
+
+    # A list of files whose instruments are not cached
+    files_with_no_cached_instruments = []
+
+    for file in files:
+        hash_value = cache_helper.get_hash_value(file.content)
+        if instruments_cache.has(hash_value):
+            # If instruments are cached
+            instruments.extend(instruments_cache.get(hash_value))
+        else:
+            # If instruments are not cached
+            files_with_no_cached_instruments.append(file)
+
+    # Get instruments that aren't cached yet and cache them
+    for file_with_no_cached_instruments in files_with_no_cached_instruments:
+        new_instruments = convert_files_to_instruments(
+            [file_with_no_cached_instruments]
+        )
+        hash_value = cache_helper.get_hash_value(
+            file_with_no_cached_instruments.content
+        )
+        instruments_cache.set(hash_value, new_instruments)
+        instruments.extend(new_instruments)
+
+    return instruments
 
 
 @router.post(path="/match")

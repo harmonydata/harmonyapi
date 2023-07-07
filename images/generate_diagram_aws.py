@@ -13,7 +13,6 @@ from diagrams.aws.integration import StepFunctions
 from diagrams.aws.network import APIGateway
 
 with Diagram("Deployed Harmony architecture", show=False):
-
     browser = Tablet("Front end (React)")
     api = APIGateway("AWS API Gateway")
     step = StepFunctions("Step function\nExpress state machine")
