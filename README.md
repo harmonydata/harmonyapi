@@ -75,6 +75,12 @@ docker run -p 8080:80 harmonyapi
 
 You should now be able to visit http://0.0.0.0:8080/docs and view the data.
 
+If you want to run the Harmony API container and execute Bash commands inside it, you can run:
+
+```
+docker run -it harmonyapi bash
+```
+
 # Architecture of deployed Harmony API server
 
 Harmony is deployed with Docker Compose - see `docker_compose.yml`.
