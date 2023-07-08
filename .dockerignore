@@ -1,0 +1,6 @@
+.git
+**/.git
+*.md
+examples/**
+*sh
+

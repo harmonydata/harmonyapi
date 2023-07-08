@@ -75,6 +75,12 @@ docker run -p 8080:80 harmonyapi
 
 You should now be able to visit http://0.0.0.0:8080/docs and view the data.
 
+If you want to run the Harmony API container and execute Bash commands inside it, you can run:
+
+```
+docker run -it harmonyapi bash
+```
+
 # Architecture of deployed Harmony API server
 
 Harmony is deployed with Docker Compose - see `docker_compose.yml`.
@@ -102,12 +108,8 @@ There are also other environment variables which tell the API where to look to l
        HARMONY_DATA_PATH: /data
        HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
        TIKA_SERVER_ENDPOINT: http://tika:9998
-       HARMONY_NER_ENDPOINT: "https://twspacytest.azurewebsites.net/api/triage"
-       HARMONY_CLASSIFIER_ENDPOINT: "https://twspacytest.azurewebsites.net/api/ner"
 ```
 
-`HARMONY_CLASSIFIER_ENDPOINT` - this can be an Azure Functions deployment of the text triage spaCy model. Example: https://twspacytest.azurewebsites.net/api/triage
-`HARMONY_NER_ENDPOINT` - this can be an Azure Functions deployment of the NER spaCy model. Example: https://twspacytest.azurewebsites.net/api/ner
 `HARMONY_DATA_PATH` - determines where model files are stored. Defaults to `HOME DIRECTORY/harmony`
 
 You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will work without it (it will download the sentence transformer from HuggingFace Hub, etc).
