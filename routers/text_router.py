@@ -152,8 +152,8 @@ def match(match_body: MatchBody) -> MatchResponse:
     # Get instruments
     instruments = match_body.instruments
 
-    # Get cached vectors
-    cached_vectors: dict[str, List[float]] = {}
+    # Get cached vectors of texts
+    texts_cached_vectors: dict[str, List[float]] = {}
     for instrument in instruments:
         for question in instrument.questions:
             # Text
@@ -161,14 +161,14 @@ def match(match_body: MatchBody) -> MatchResponse:
             hash_value_question_text = cache_helper.get_hash_value(question_text)
             if vectors_cache.has(hash_value_question_text):
                 cached_vector = vectors_cache.get(hash_value_question_text)
-                cached_vectors[question_text] = cached_vector[question_text]
+                texts_cached_vectors[question_text] = cached_vector[question_text]
 
             # Negated text
             negated_text = negate(question_text, instrument.language)
             hash_value_negated_text = cache_helper.get_hash_value(negated_text)
             if vectors_cache.has(hash_value_negated_text):
                 cached_vector = vectors_cache.get(hash_value_negated_text)
-                cached_vectors[negated_text] = cached_vector[negated_text]
+                texts_cached_vectors[negated_text] = cached_vector[negated_text]
 
     # Match instruments
     questions, matches, query_similarity, new_vectors = match_instruments(
@@ -177,7 +177,7 @@ def match(match_body: MatchBody) -> MatchResponse:
         mhc_questions=mhc_questions,
         mhc_all_metadatas=mhc_all_metadata,
         mhc_embeddings=mhc_embeddings,
-        cached_vectors=cached_vectors,
+        texts_cached_vectors=texts_cached_vectors,
     )
 
     # Add new vectors to cache
