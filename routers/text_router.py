@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from fastapi import Body
 
 from services.instruments_cache import InstrumentsCache
+from services.vectors_cache import VectorsCache
 from utils import cache_helper
 from utils import helpers
 
@@ -16,8 +17,12 @@ from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.matching.default_matcher import match_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
 from harmony.schemas.responses.text import MatchResponse
+from harmony.matching.negator import negate
 
 router = APIRouter(prefix="/text")
+
+# Get mhc embeddings
+mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings()
 
 
 @router.post(path="/parse")
@@ -87,14 +92,14 @@ def parse_instruments(
 
     """
 
+    instruments_cache = InstrumentsCache()
+
     # Assign any missing IDs
     for file in files:
         if file.file_id is None:
             file.file_id = uuid.uuid4().hex
 
     instruments: List[Instrument] = []
-
-    instruments_cache = InstrumentsCache()
 
     # A list of files whose instruments are not cached
     files_with_no_cached_instruments = []
@@ -126,8 +131,9 @@ def parse_instruments(
 def match(match_body: MatchBody) -> MatchResponse:
     """
     Match instruments
-
     """
+
+    vectors_cache = VectorsCache()
 
     # Assign any missing IDs
     for instrument in match_body.instruments:
@@ -136,27 +142,58 @@ def match(match_body: MatchBody) -> MatchResponse:
         if instrument.instrument_id is None:
             instrument.instrument_id = uuid.uuid4().hex
 
+    # Get query
     query = match_body.query
     if type(query) is str:
         query = query.strip()
     if query == "":
         query = None
 
-    # Get mhc embeddings
-    mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings()
+    # Get instruments
+    instruments = match_body.instruments
 
-    questions, matches, query_similarity = match_instruments(
-        match_body.instruments, query, mhc_questions, mhc_all_metadata, mhc_embeddings
+    # Get cached vectors
+    cached_vectors: dict[str, List[float]] = {}
+    for instrument in instruments:
+        for question in instrument.questions:
+            # Text
+            question_text = question.question_text
+            hash_value_question_text = cache_helper.get_hash_value(question_text)
+            if vectors_cache.has(hash_value_question_text):
+                cached_vector = vectors_cache.get(hash_value_question_text)
+                cached_vectors[question_text] = cached_vector[question_text]
+
+            # Negated text
+            negated_text = negate(question_text, instrument.language)
+            hash_value_negated_text = cache_helper.get_hash_value(negated_text)
+            if vectors_cache.has(hash_value_negated_text):
+                cached_vector = vectors_cache.get(hash_value_negated_text)
+                cached_vectors[negated_text] = cached_vector[negated_text]
+
+    # Match instruments
+    questions, matches, query_similarity, new_vectors = match_instruments(
+        instruments=instruments,
+        query=query,
+        mhc_questions=mhc_questions,
+        mhc_all_metadatas=mhc_all_metadata,
+        mhc_embeddings=mhc_embeddings,
+        cached_vectors=cached_vectors,
     )
 
-    matches_jsonifiable = matches.tolist()
+    # Add new vectors to cache
+    for key, value in new_vectors.items():
+        hash_value = cache_helper.get_hash_value(key)
+        if not vectors_cache.has(hash_value):
+            vectors_cache.set(hash_value, {key: value})
+
+    matches_jsonable = matches.tolist()
 
     if query_similarity is not None:
         query_similarity = query_similarity.tolist()
 
     response = MatchResponse(
         questions=questions,
-        matches=matches_jsonifiable,
+        matches=matches_jsonable,
         query_similarity=query_similarity,
     )
 
