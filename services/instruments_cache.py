@@ -47,7 +47,7 @@ class InstrumentsCache(metaclass=SingletonMeta):
 
         return key in self.__cache
 
-    def get_all(self) -> dict[str, List[Instrument]]:
+    def get_cache(self) -> dict[str, List[Instrument]]:
         """Get the whole cache"""
 
         return self.__cache
