@@ -10,7 +10,7 @@ from rocketry.conds import cron
 app = Rocketry(executation="async")
 
 
-@app.task(cron("* * * * *"))
+@app.task(cron("0 */12 * * *"))
 async def do_every_12th_hour():
     """
     Save cache to Azure Blob Storage
