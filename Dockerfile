@@ -7,6 +7,7 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
 COPY . .
+COPY harmony/src/harmony .
 
 EXPOSE 80
 
