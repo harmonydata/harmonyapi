@@ -9,6 +9,7 @@ RUN python harmony/src/harmony/util/model_downloader.py
 
 RUN git clone https://github.com/harmonydata/harmonydata.github.io
 
+# Make sure Harmony front end points to local Harmony back end
 RUN sed -i s#https://api.harmonydata.org#http://localhost:8000# */*/*/*js
 
 WORKDIR /backend/harmonydata.github.io
