@@ -9,7 +9,9 @@ from core.settings import settings
 from routers.health_check_router import router as health_check_router
 from routers.info_router import router as info_router
 from routers.text_router import router as text_router
+from services.instruments_cache import InstrumentsCache
 from services.scheduler import app as app_rocketry
+from services.vectors_cache import VectorsCache
 
 description = """
 Documentation for Harmony API.
@@ -63,6 +65,11 @@ class Server(uvicorn.Server):
 
 
 async def main():
+    # Load cache
+    print("INFO:\t  Loading cache...")
+    InstrumentsCache()
+    VectorsCache()
+
     server = Server(
         config=uvicorn.Config(
             app=app_fastapi,

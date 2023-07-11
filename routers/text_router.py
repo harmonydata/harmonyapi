@@ -24,6 +24,10 @@ router = APIRouter(prefix="/text")
 # Get mhc embeddings
 mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings()
 
+# Cache
+instruments_cache = InstrumentsCache()
+vectors_cache = VectorsCache()
+
 
 @router.post(path="/parse")
 def parse_instruments(
@@ -92,8 +96,6 @@ def parse_instruments(
 
     """
 
-    instruments_cache = InstrumentsCache()
-
     # Assign any missing IDs
     for file in files:
         if file.file_id is None:
@@ -132,8 +134,6 @@ def match(match_body: MatchBody) -> MatchResponse:
     """
     Match instruments
     """
-
-    vectors_cache = VectorsCache()
 
     # Assign any missing IDs
     for instrument in match_body.instruments:
@@ -215,17 +215,13 @@ def get_cache() -> CacheResponse:
     Get all items in cache
     """
 
-    # Get cached items
-    cached_instruments = InstrumentsCache().get_cache()
-    cached_vectors = VectorsCache().get_cache()
-
     instruments_list = []
-    for value in cached_instruments.values():
+    for value in instruments_cache.get_cache().values():
         for v in value:
             instruments_list.append(v)
 
     vectors_list = []
-    for value in cached_vectors.values():
+    for value in vectors_cache.get_cache().values():
         for k, v in value.items():
             vectors_list.append({"text": k, "vector": v})
 
