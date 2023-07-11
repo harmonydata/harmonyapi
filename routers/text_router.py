@@ -184,7 +184,7 @@ def match(match_body: MatchBody) -> MatchResponse:
     for key, value in new_vectors.items():
         hash_value = cache_helper.get_hash_value(key)
         if not vectors_cache.has(hash_value):
-            vectors_cache.set(hash_value, {key: value.tolist()})
+            vectors_cache.set(hash_value, {key: value})
 
     matches_jsonable = matches.tolist()
 
