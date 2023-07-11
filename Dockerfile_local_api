@@ -1,7 +1,7 @@
 FROM python:3.10
 
 RUN apt update
-RUN apt install default-jre
+RUN apt install -y default-jre
 
 WORKDIR /backend
 
