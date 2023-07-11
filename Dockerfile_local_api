@@ -1,8 +1,21 @@
-FROM harmonydata/harmonyapi
+FROM harmonydata/harmonyapi:20230708185427_4f28802
 
 RUN apt update
-RUN apt install -y default-jre
+RUN apt install -y default-jre nodejs npm
+
+RUN wget http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/2.6.0/tika-server-standard-2.6.0.jar -o /tmp/tika-server.jar
+
+RUN python harmony/src/harmony/util/model_downloader.py 
+
+RUN git clone https://github.com/harmonydata/harmonydata.github.io
+
+RUN 'sed -i s#https://api.harmonydata.org#http://localhost:8000# */*/*/*js'
+
+RUN cd harmonydata.github.io
+RUN npm install -g
+RUN cd ..
 
 EXPOSE 8000
+EXPOSE 3000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["bash", "start_harmony_local.sh"]
