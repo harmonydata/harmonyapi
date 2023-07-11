@@ -3,9 +3,9 @@ import uuid
 from typing import Annotated
 from typing import List
 
-from fastapi import APIRouter
-from fastapi import Body
+from fastapi import APIRouter, Body, status
 
+from schemas.cache_response import CacheResponse
 from services.instruments_cache import InstrumentsCache
 from services.vectors_cache import VectorsCache
 from utils import cache_helper
@@ -209,8 +209,8 @@ def get_example_instruments() -> List[Instrument]:
     return helpers.get_example_instruments()
 
 
-@router.get(path="/cache")
-def get_example_instruments() -> dict:
+@router.get(path="/cache", response_model=CacheResponse, status_code=status.HTTP_200_OK)
+def get_cache() -> CacheResponse:
     """
     Get all items in cache
     """
@@ -219,9 +219,17 @@ def get_example_instruments() -> dict:
     cached_instruments = InstrumentsCache().get_cache()
     cached_vectors = VectorsCache().get_cache()
 
-    response = {
-        "instruments": [v for k, v in cached_instruments.items()],
-        "vectors": [{k: v for k, v in v.items()} for k, v in cached_vectors.items()],
-    }
+    instruments_list = []
+    for value in cached_instruments.values():
+        for v in value:
+            instruments_list.append(v)
 
-    return response
+    vectors_list = []
+    for value in cached_vectors.values():
+        for k, v in value.items():
+            vectors_list.append({"text": k, "vector": v})
+
+    return CacheResponse(
+        instruments=instruments_list,
+        vectors=vectors_list,
+    )
