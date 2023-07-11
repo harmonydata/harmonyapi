@@ -184,7 +184,7 @@ def match(match_body: MatchBody) -> MatchResponse:
     for key, value in new_vectors.items():
         hash_value = cache_helper.get_hash_value(key)
         if not vectors_cache.has(hash_value):
-            vectors_cache.set(hash_value, {key: value})
+            vectors_cache.set(hash_value, {key: value.tolist()})
 
     matches_jsonable = matches.tolist()
 
@@ -207,3 +207,21 @@ def get_example_instruments() -> List[Instrument]:
     """
 
     return helpers.get_example_instruments()
+
+
+@router.get(path="/cache")
+def get_example_instruments() -> dict:
+    """
+    Get all items in cache
+    """
+
+    # Get cached items
+    cached_instruments = InstrumentsCache().get_cache()
+    cached_vectors = VectorsCache().get_cache()
+
+    response = {
+        "instruments": [v for k, v in cached_instruments.items()],
+        "vectors": [{k: v for k, v in v.items()} for k, v in cached_vectors.items()],
+    }
+
+    return response

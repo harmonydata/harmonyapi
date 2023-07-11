@@ -54,9 +54,11 @@ def save_cache_to_azure(cache: dict, cache_file_name: str):
         container_harmonycache.upload_blob(
             name=cache_file_name, data=json.dumps(cache), overwrite=True
         )
-        print("INFO:\t  Cache saved to Azure Blob Storage")
+        print(f"INFO:\t  Cache '{cache_file_name}' saved to Azure Blob Storage")
     except (Exception,) as e:
-        print(f"ERROR:\t  Could not save cache to Azure Blob Storage: {str(e)}")
+        print(
+            f"ERROR:\t  Could not save cache '{cache_file_name}' to Azure Blob Storage: {str(e)}"
+        )
 
 
 def clear_all_cache():
@@ -65,3 +67,4 @@ def clear_all_cache():
     container = get_container_harmonycache()
 
     container.delete_blob(blob=constants.INSTRUMENTS_CACHE_JSON_FILENAME)
+    container.delete_blob(blob=constants.VECTORS_CACHE_JSON_FILENAME)
