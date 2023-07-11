@@ -40,7 +40,7 @@ def get_cache_from_azure(cache_file_name: str) -> dict:
         try:
             cache = json.loads(blob.download_blob().readall().decode())
         except (Exception,) as e:
-            print(f"ERROR:\t  Could not get cache from Azure Blob Storage: {str(e)}")
+            print(f"ERROR:\t  Could not get cache '{cache_file_name}' from Azure Blob Storage: {str(e)}")
 
     return cache
 
