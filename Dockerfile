@@ -8,7 +8,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 # Force download of Tika
-RUN python -e 'from tika import parser; parser.from_buffer('abc', xmlContent=True, requestOptions={'timeout': 300})'
+RUN python -e 'from tika import parser; parser.from_buffer("abc", xmlContent=True)'
 
 COPY . .
 
