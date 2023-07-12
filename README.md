@@ -39,6 +39,29 @@ There is a live demo at: https://app.harmonydata.org/
 
 Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.org/how-does-harmony-work/ 
 
+## Do you want to run Harmony in your browser locally from a pre-built Docker container? 
+
+Download and install Docker:
+
+* https://docs.docker.com/desktop/install/mac-install/
+* https://docs.docker.com/desktop/install/windows-install/
+* https://docs.docker.com/desktop/install/linux-install/
+
+Open a Terminal and run
+
+```
+docker run -p 8000:8000 -p 3000:3000 harmonydata/harmonylocal
+```
+
+Then go to http://localhost:3000 in your browser.
+
+## Docker images
+
+If you are a Docker user, you can run Harmony from a pre-built Docker image.
+
+* https://hub.docker.com/repository/docker/harmonydata/harmonyapi - just the Harmony API
+* https://hub.docker.com/repository/docker/harmonydata/harmonylocal - Harmony API and React front end
+
 # Getting started: running and developing the API on your computer using Docker
 
 A prerequisite is Tika, which is a PDF parsing library. This must run as a server in Java. We use the Tika Python bindings.
