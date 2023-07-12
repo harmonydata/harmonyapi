@@ -5,7 +5,6 @@ from typing import List
 
 from fastapi import APIRouter, Body, status
 
-from schemas.cache_response import CacheResponse
 from services.instruments_cache import InstrumentsCache
 from services.vectors_cache import VectorsCache
 from utils import cache_helper
@@ -16,7 +15,7 @@ sys.path.append("./harmony/src")
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.matching.default_matcher import match_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
-from harmony.schemas.responses.text import MatchResponse
+from harmony.schemas.responses.text import MatchResponse, CacheResponse
 from harmony.matching.negator import negate
 
 router = APIRouter(prefix="/text")
