@@ -20,5 +20,12 @@ async def do_every_12th_hour():
     Runs at minute 0 past every 12th hour
     """
 
-    await run_in_threadpool(InstrumentsCache().save)
-    await run_in_threadpool(VectorsCache().save)
+    try:
+        await run_in_threadpool(InstrumentsCache().save)
+    except (Exception,) as e:
+        print(f"Could not save instruments cache: {str(e)}")
+
+    try:
+        await run_in_threadpool(VectorsCache().save)
+    except (Exception,) as e:
+        print(f"Could not save vectors cache: {str(e)}")
