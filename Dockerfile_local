@@ -1,4 +1,4 @@
-FROM harmonydata/harmonyapi:20230708185427_4f28802
+FROM harmonydata/harmonyapi:latest
 
 RUN apt update && apt install -y nodejs npm
 
@@ -6,8 +6,8 @@ RUN python harmony/src/harmony/util/model_downloader.py
 
 RUN git clone https://github.com/harmonydata/harmonydata.github.io
 
+ENV REACT_APP_API_URL=http://localhost:8000/
 # Make sure Harmony front end points to local Harmony back end
-RUN sed -i s#https://api.harmonydata.org#http://localhost:8000# */*/*/*js
 
 WORKDIR /backend/harmonydata.github.io
 RUN npm install
