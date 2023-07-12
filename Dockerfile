@@ -2,6 +2,9 @@ FROM python:3.10
 
 WORKDIR /backend
 
+RUN apt update
+RUN apt install -y default-jre
+
 COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
