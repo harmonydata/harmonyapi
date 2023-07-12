@@ -10,8 +10,6 @@ from services.vectors_cache import VectorsCache
 from utils import cache_helper
 from utils import helpers
 
-sys.path.append("./harmony/src")
-
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.matching.default_matcher import match_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
