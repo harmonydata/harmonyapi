@@ -4,7 +4,6 @@ RUN apt update && apt install -y default-jre
 
 RUN python -c 'from tika import parser; parser.from_buffer("abc", xmlContent=True)'
 
-ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
 
 CMD ["uvicorn", "main:app_fastapi", "--host", "0.0.0.0", "--port", "80"]
