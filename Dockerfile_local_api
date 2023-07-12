@@ -1,7 +1,6 @@
 FROM harmonydata/harmonyapi:20230708185427_4f28802
 
-RUN apt update
-RUN apt install -y nodejs npm
+RUN apt update && apt install -y nodejs npm
 
 RUN python harmony/src/harmony/util/model_downloader.py 
 

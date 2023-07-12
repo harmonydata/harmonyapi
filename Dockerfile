@@ -2,8 +2,7 @@ FROM python:3.10
 
 WORKDIR /backend
 
-RUN apt update
-RUN apt install -y default-jre
+RUN apt update && apt install -y default-jre
 
 RUN wget http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/2.6.0/tika-server-standard-2.6.0.jar -o /tmp/tika-server.jar
 
