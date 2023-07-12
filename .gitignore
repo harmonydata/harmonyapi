@@ -131,3 +131,7 @@ dmypy.json
 
 # Data
 data/
+
+# Cache
+instruments_cache.json
+vectors_cache.json
