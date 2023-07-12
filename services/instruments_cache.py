@@ -1,10 +1,14 @@
+import json
+import os
 from typing import List
 
 from harmony.schemas.requests.text import Instrument
 
 import constants
-from utils import cache_helper
 from utils.singleton_meta import SingletonMeta
+
+data_path = os.path.join(os.getenv("HARMONY_DATA_PATH", "data"))
+cache_file_path = os.path.join(data_path, constants.INSTRUMENTS_CACHE_JSON_FILENAME)
 
 
 class InstrumentsCache(metaclass=SingletonMeta):
@@ -20,9 +24,11 @@ class InstrumentsCache(metaclass=SingletonMeta):
     def __load(self):
         """Load cache"""
 
-        cache = cache_helper.get_cache_from_azure(
-            constants.INSTRUMENTS_CACHE_JSON_FILENAME
-        )
+        if os.path.isfile(cache_file_path):
+            with open(cache_file_path, "r", encoding="utf8") as file:
+                cache = json.loads(file.read())
+        else:
+            cache = {}
 
         # Parse the cache
         cache_parsed: dict[str, List[Instrument]] = {}
@@ -53,7 +59,7 @@ class InstrumentsCache(metaclass=SingletonMeta):
         return self.__cache
 
     def save(self):
-        """Save cache to Azure Blob Storage"""
+        """Save cache"""
 
         # Parse the cache
         cache_parsed: dict[str, List] = {}
@@ -61,7 +67,8 @@ class InstrumentsCache(metaclass=SingletonMeta):
             instruments = [x.dict() for x in value]
             cache_parsed[key] = instruments
 
-        cache_helper.save_cache_to_azure(
-            cache=cache_parsed,
-            cache_file_name=constants.INSTRUMENTS_CACHE_JSON_FILENAME,
-        )
+        # Save
+        with open(cache_file_path, "w", encoding="utf8") as file:
+            file.write(json.dumps(cache_parsed, ensure_ascii=False))
+
+        print(f"INFO:\t  Cache {constants.INSTRUMENTS_CACHE_JSON_FILENAME} saved...")

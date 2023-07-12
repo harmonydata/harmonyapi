@@ -1,8 +1,12 @@
+import json
+import os
 from typing import List
 
 import constants
-from utils import cache_helper
 from utils.singleton_meta import SingletonMeta
+
+data_path = os.path.join(os.getenv("HARMONY_DATA_PATH", "data"))
+cache_file_path = os.path.join(data_path, constants.VECTORS_CACHE_JSON_FILENAME)
 
 
 class VectorsCache(metaclass=SingletonMeta):
@@ -18,9 +22,13 @@ class VectorsCache(metaclass=SingletonMeta):
     def __load(self):
         """Load cache"""
 
-        self.__cache = cache_helper.get_cache_from_azure(
-            constants.VECTORS_CACHE_JSON_FILENAME
-        )
+        if os.path.isfile(cache_file_path):
+            with open(cache_file_path, "r", encoding="utf8") as file:
+                cache = json.loads(file.read())
+        else:
+            cache = {}
+
+        self.__cache = cache
 
     def set(self, key: str, value: dict[str, List[float]]):
         """Set key value pair"""
@@ -43,9 +51,10 @@ class VectorsCache(metaclass=SingletonMeta):
         return self.__cache
 
     def save(self):
-        """Save cache to Azure Blob Storage"""
+        """Save cache"""
 
-        cache_helper.save_cache_to_azure(
-            cache=self.__cache,
-            cache_file_name=constants.VECTORS_CACHE_JSON_FILENAME,
-        )
+        # Save
+        with open(cache_file_path, "w", encoding="utf8") as file:
+            file.write(json.dumps(self.__cache, ensure_ascii=False))
+
+        print(f"INFO:\t  Cache {constants.VECTORS_CACHE_JSON_FILENAME} saved...")
