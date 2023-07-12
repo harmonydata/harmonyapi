@@ -7,7 +7,7 @@ from harmony.schemas.requests.text import Instrument
 import constants
 from utils.singleton_meta import SingletonMeta
 
-data_path = os.path.join(os.getenv("HARMONY_DATA_PATH", os.getcwd()))
+data_path = os.getenv("HARMONY_DATA_PATH", os.getcwd())
 cache_file_path = os.path.join(data_path, constants.INSTRUMENTS_CACHE_JSON_FILENAME)
 
 
