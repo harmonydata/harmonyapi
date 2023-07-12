@@ -1,9 +1,7 @@
 FROM harmonydata/harmonyapi:20230708185427_4f28802
 
 RUN apt update
-RUN apt install -y default-jre nodejs npm
-
-RUN wget http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/2.6.0/tika-server-standard-2.6.0.jar -o /tmp/tika-server.jar
+RUN apt install -y nodejs npm
 
 RUN python harmony/src/harmony/util/model_downloader.py 
 
