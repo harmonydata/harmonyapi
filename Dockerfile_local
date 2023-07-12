@@ -16,4 +16,7 @@ WORKDIR /backend
 EXPOSE 8000
 EXPOSE 3000
 
+ARG COMMIT_ID="No commit ID specified"
+ENV COMMIT_ID=$COMMIT_ID
+
 CMD ["bash", "start_harmony_local.sh"]
