@@ -12,5 +12,6 @@ EXPOSE 80
 
 ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
+ENV STAGE=prod
 
-CMD ["bash", "startup.sh"]
+CMD ["python", "main.py"]
