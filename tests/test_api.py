@@ -16,7 +16,7 @@ json_data_gad_7_pdf = [
 }
 ]
 
-endpoint = 'http://localhost:8000/api/parse'
+endpoint = 'http://localhost:8000/text/parse'
     
 class TestApi(unittest.TestCase):
 

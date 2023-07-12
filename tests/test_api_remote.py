@@ -16,7 +16,7 @@ json_data_gad_7_pdf = [
 }
 ]
 
-endpoint = 'https://api.harmonydata.org/api/parse'
+endpoint = 'https://api.harmonydata.org/text/parse'
     
 class TestApi(unittest.TestCase):
 
