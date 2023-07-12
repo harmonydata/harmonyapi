@@ -4,14 +4,13 @@ WORKDIR /backend
 
 RUN apt update && apt install -y default-jre
 
-RUN wget http://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server-standard/2.6.0/tika-server-standard-2.6.0.jar -o /tmp/tika-server.jar
-
 COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
+# Force download of Tika
+RUN python -e 'from tika import parser; parser.from_buffer('abc', xmlContent=True, requestOptions={'timeout': 300})'
 
 COPY . .
-COPY harmony/src/harmony .
 
 EXPOSE 80
 
