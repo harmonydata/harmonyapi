@@ -1,6 +1,6 @@
 FROM harmonydata/harmonyapi:latest
 
-RUN apt update && apt install -y nodejs npm
+RUN apt update && apt install -y default-jre nodejs npm
 
 RUN python harmony/src/harmony/util/model_downloader.py 
 
