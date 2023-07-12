@@ -14,4 +14,7 @@ ARG COMMIT_ID="No commit ID specified"
 ENV COMMIT_ID=$COMMIT_ID
 ENV STAGE=prod
 
+# Download the models
+RUN python harmony/src/harmony/util/model_downloader.py 
+
 CMD ["uvicorn", "main:app_fastapi", "--host", "0.0.0.0", "--port", "80"]
