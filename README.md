@@ -411,7 +411,7 @@ McElroy, E., Moltrecht, B., Scopel Hoffmann, M., Wood, T. A., & Ploubidis, G. (2
 }
 ```
 
-## API Reference
+# API Reference
 
 # Harmony API
 
@@ -438,6 +438,8 @@ URL: https://fastdatascience.com
 - 3. TEXT
 - 3.1 POST /text/parse
 - 3.2 POST /text/match
+- 3.3 POST /text/examples
+- 3.4 GET /text/cache
 
 
 ## API
@@ -505,10 +507,11 @@ Array of object:
 file_id string Unique identifier for the file (UUID-4)
 file_name string DEFAULT:Untitled file
 The name of the input file
-file_type* enum ALLOWED:pdf, xlsx, txt
+file_type* enum ALLOWED:pdf, xlsx, txt, docx
 The file type (pdf, xlsx, txt)
 content* string The raw file contents
 text_content string The plain text content
+tables [undefined]
 }]
 ```
 RESPONSE
@@ -526,7 +529,7 @@ instrument_name string DEFAULT:Untitled instrument
 Human-readable name of the instrument
 file_name string DEFAULT:Untitled file
 The name of the input file
-file_type enum ALLOWED:pdf, xlsx, txt
+file_type enum ALLOWED:pdf, xlsx, txt, docx
 The file type (pdf, xlsx, txt)
 file_section string The sub-section of the file, e.g. Excel tab
 study string The study
@@ -541,10 +544,10 @@ bho, bm, bn, bs, ca, ceb, ckb, co, cs, cy, da, doi,
 dv, ee, eo, et, eu, fa, fi, fil, fy, ga, gd, gl, gn,
 gom, gu, ha, haw, hi, hmn, hr, ht, hu, hy, id, ig,
 ilo, is, jv, ka, kk, km, kn, kri, ku, ky, lb, lg,
-ln, lo, lt, lus, lv, mai, mg, mi, mk, ml, mn, mni-
 ```
 
 ```
+ln, lo, lt, lus, lv, mai, mg, mi, mk, ml, mn, mni-
 mtei, mr, ms, mt, my, ne, nl, no, nso, ny, om, or,
 pa, pl, ps, qu, ro, rw, sa, sd, si, sk, sl, sm, sn,
 so, sq, sr, st, su, sv, sw, ta, te, tg, th, ti, tk,
@@ -590,7 +593,6 @@ type* string
 ## 3.2 POST /text/match
 
 Match
-
 Match instruments
 
 REQUEST
@@ -605,11 +607,11 @@ instrument_id string Unique identifier for the instrument (UUID-4)
 instrument_name string DEFAULT:Untitled instrument
 Human-readable name of the instrument
 file_name string DEFAULT:Untitled file
-The name of the input file
 ```
 
 ```
-file_type enum ALLOWED:pdf, xlsx, txt
+The name of the input file
+file_type enum ALLOWED:pdf, xlsx, txt, docx
 The file type (pdf, xlsx, txt)
 file_section string The sub-section of the file, e.g. Excel tab
 study string The study
@@ -668,10 +670,10 @@ questions* [{
 Array of object:
 question_no string Number of the question
 question_intro string Introductory text applying to the question
-question_text* string Text of the question
 ```
 
 ```
+question_text* string Text of the question
 options [string]
 source_page integer DEFAULT: 0
 The page of the PDF on which the question was located, zero-indexed
@@ -688,8 +690,9 @@ Array of object:
 query_similarity [undefined]
 }
 ```
+```
 STATUS CODE - 422: Validation Error
-
+```
 ```
 RESPONSE MODEL - application/json
 {
@@ -706,6 +709,143 @@ type* string
 }]
 }
 ```
+## 3.3 POST /text/examples
+
+Get Example Instruments
+
+Get example instruments
+
+REQUEST
+
+```
+No request parameters
+```
+RESPONSE
+
+```
+STATUS CODE - 200: Successful Response
+```
+```
+RESPONSE MODEL - application/json
+[{
+Array of object:
+file_id string Unique identifier for the file (UUID-4)
+instrument_id string Unique identifier for the instrument (UUID-4)
+instrument_name string DEFAULT:Untitled instrument
+Human-readable name of the instrument
+file_name string DEFAULT:Untitled file
+The name of the input file
+file_type enum ALLOWED:pdf, xlsx, txt, docx
+The file type (pdf, xlsx, txt)
+```
+
+```
+file_section string The sub-section of the file, e.g. Excel tab
+study string The study
+sweep string The sweep
+metadata {
+Optional metadata about the instrument (URL, citation, DOI, copyright holder)
+}
+language enum DEFAULT:en
+ALLOWED:de, el, en, es, fr, it, he, ja, ko, pt, ru, uk, zh,
+ar, la, tr, af, ak, am, as, ay, az, be, bg, bho, bm, bn,
+bs, ca, ceb, ckb, co, cs, cy, da, doi, dv, ee, eo, et,
+eu, fa, fi, fil, fy, ga, gd, gl, gn, gom, gu, ha, haw,
+hi, hmn, hr, ht, hu, hy, id, ig, ilo, is, jv, ka, kk, km,
+kn, kri, ku, ky, lb, lg, ln, lo, lt, lus, lv, mai, mg,
+mi, mk, ml, mn, mni-mtei, mr, ms, mt, my, ne, nl, no,
+nso, ny, om, or, pa, pl, ps, qu, ro, rw, sa, sd, si, sk,
+sl, sm, sn, so, sq, sr, st, su, sv, sw, ta, te, tg, th,
+ti, tk, tl, ts, tt, ug, ur, uz, vi, xh, yi, yo, zh-tw,
+zu, yue
+The ISO 639-2 (alpha-2) encoding of the instrument language
+questions* [{
+Array of object:
+question_no string Number of the question
+question_intro string Introductory text applying to the question
+question_text* string Text of the question
+options [string]
+source_page integer DEFAULT: 0
+The page of the PDF on which the question was located, zero-indexed
+instrument_id string Unique identifier for the instrument (UUID-4)
+instrument_name string Human readable name for the instrument
+topics_auto [undefined]
+nearest_match_from_mhc_auto {
+Automatically identified nearest MHC match
+}
+}]
+}]
+```
+## 3.4 GET /text/cache
+
+Get Cache
+Get all items in cache
+
+REQUEST
+
+```
+No request parameters
+```
+RESPONSE
+
+```
+STATUS CODE - 200: Successful Response
+```
+```
+RESPONSE MODEL - application/json
+{
+instruments* [{
+Array of object:
+file_id string Unique identifier for the file (UUID-4)
+instrument_id string Unique identifier for the instrument (UUID-4)
+instrument_name string DEFAULT:Untitled instrument
+Human-readable name of the instrument
+```
+
+file_name string DEFAULT:Untitled file
+The name of the input file
+file_type enum ALLOWED:pdf, xlsx, txt, docx
+The file type (pdf, xlsx, txt)
+file_section string The sub-section of the file, e.g. Excel tab
+study string The study
+sweep string The sweep
+metadata {
+Optional metadata about the instrument (URL, citation, DOI, copyright holder)
+}
+language enum DEFAULT:en
+ALLOWED:de, el, en, es, fr, it, he, ja, ko, pt, ru, uk,
+zh, ar, la, tr, af, ak, am, as, ay, az, be, bg, bho,
+bm, bn, bs, ca, ceb, ckb, co, cs, cy, da, doi, dv, ee,
+eo, et, eu, fa, fi, fil, fy, ga, gd, gl, gn, gom, gu,
+ha, haw, hi, hmn, hr, ht, hu, hy, id, ig, ilo, is, jv,
+ka, kk, km, kn, kri, ku, ky, lb, lg, ln, lo, lt, lus,
+lv, mai, mg, mi, mk, ml, mn, mni-mtei, mr, ms, mt, my,
+ne, nl, no, nso, ny, om, or, pa, pl, ps, qu, ro, rw,
+sa, sd, si, sk, sl, sm, sn, so, sq, sr, st, su, sv,
+sw, ta, te, tg, th, ti, tk, tl, ts, tt, ug, ur, uz,
+vi, xh, yi, yo, zh-tw, zu, yue
+The ISO 639-2 (alpha-2) encoding of the instrument language
+questions* [{
+Array of object:
+question_no string Number of the question
+question_intro string Introductory text applying to the question
+question_text* string Text of the question
+options [string]
+source_page integer DEFAULT: 0
+The page of the PDF on which the question was located, zero-indexed
+instrument_id string Unique identifier for the instrument (UUID-4)
+instrument_name string Human readable name for the instrument
+topics_auto [undefined]
+nearest_match_from_mhc_auto {
+Automatically identified nearest MHC match
+}
+}]
+}]
+vectors* [{
+Array of object:
+}]
+}
+
 
 
 
