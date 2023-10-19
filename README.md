@@ -106,7 +106,15 @@ docker run -it harmonyapi bash
 
 # Architecture of deployed Harmony API server
 
-Harmony is deployed with Docker Compose - see `docker_compose.yml`.
+## On-premises deployment
+
+Harmony team only: see details of how Harmony is deployed on-premises here:
+
+https://github.com/harmonydata/harmony_deployment_ulster_private
+
+## Alternative Docker Compose deployment
+
+You can deploy Harmony with Docker Compose - see `docker_compose.yml`.
 
 ## MHC data
 
@@ -121,6 +129,8 @@ mhc_questions.json
 ```
 
 When Harmony is deployed to Azure, there is an Azure blob storage which is mounted under `/data`.
+
+The data files can be found here: https://github.com/harmonydata/harmony_deployment_ulster_private
 
 ## Environment variables
 
