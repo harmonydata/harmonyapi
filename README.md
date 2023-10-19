@@ -9,13 +9,13 @@
 
 ## Who to contact?
 
-You can contact Harmony team at https://harmonydata.org/, or Thomas Wood at http://fastdatascience.com/.
+You can contact Harmony team at https://harmonydata.ac.uk/, or Thomas Wood at http://fastdatascience.com/.
 
 # How to contribute
 
 You can raise an issue in the [issue tracker](https://github.com/harmonydata/harmony/issues), and you can open a [pull request](https://github.com/harmonydata/harmony/pulls).
 
-Please contact us at  https://harmonydata.org/contact or write to thomas@fastdatascience.com if you would like to be involved in the project.
+Please contact us at  https://harmonydata.ac.uk/contact or write to thomas@fastdatascience.com if you would like to be involved in the project.
 
 ## Looking for the Harmony Python library?
 
@@ -29,15 +29,15 @@ Please visit https://github.com/harmonydata/harmony_original
 
 Harmony is a data harmonisation project that uses Natural Language Processing to help researchers make better use of existing data from different studies by supporting them with the harmonisation of various measures and items used in different studies. Harmony is a collaboration project between the [University of Ulster](https://www.ulster.ac.uk/), [University College London](https://ucl.ac.uk/), the [Universidade Federal de Santa Maria](https://www.ufsm.br/) in Brazil, and [Fast Data Science Ltd](https://fastdatascience.com/how-does-harmony-work/) in London.
 
-You can read more at https://harmonydata.org.
+You can read more at https://harmonydata.ac.uk.
 
-There is a live demo at: https://app.harmonydata.org/	
+There is a live demo at: https://harmonydata.ac.uk/app
 
 ![Screenshot](images/screenshot1.png)
 
 ## How does Harmony work in layman's terms?
 
-Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.org/how-does-harmony-work/ 
+Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.ac.uk/how-does-harmony-work/ 
 
 ## Do you want to run Harmony in your browser locally from a pre-built Docker container? 
 
@@ -176,7 +176,7 @@ If you want to read in a raw (unstructured) PDF or Excel file, you can do this v
 
 ```
 curl -X 'POST' \
-  'https://api.harmonydata.org/text/parse' \
+  'https://api.harmonydata.ac.uk/text/parse' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
@@ -189,7 +189,7 @@ curl -X 'POST' \
 ]'
 
 curl -X 'POST' \
-  'https://api.harmonydata.org/text/parse' \
+  'https://api.harmonydata.ac.uk/text/parse' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
@@ -240,7 +240,7 @@ You can request the similarities between instruments with a second POST request:
 
 ```
 curl -X 'POST' \
-  'https://api.harmonydata.org/text/match' \
+  'https://api.harmonydata.ac.uk/text/match' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -382,7 +382,7 @@ thomas@fastdatascience.com
 
 If you would like to cite the tool alone, you can cite:
 
-Wood, T.A., McElroy, E., Moltrecht, B., Ploubidis, G.B., Scopel Hoffmann, M., Harmony [Computer software], Version 1.0, accessed at https://app.harmonydata.org. Ulster University (2022)
+Wood, T.A., McElroy, E., Moltrecht, B., Ploubidis, G.B., Scopel Hoffmann, M., Harmony [Computer software], Version 1.0, accessed at https://harmonydata.ac.uk/app. Ulster University (2022)
 
 A BibTeX entry for LaTeX users is
 
@@ -392,7 +392,7 @@ A BibTeX entry for LaTeX users is
     TITLE  = {Harmony (Computer software), Version 1.0},
     YEAR   = {2022},
     Note   = {To appear},
-    url = {https://app.harmonydata.org}
+    url = {https://harmonydata.ac.uk/app}
 }
 ```
 
@@ -420,8 +420,8 @@ API Version: 2.
 Documentation for Harmony API.
 
 Harmony is a tool using AI which allows you to compare items from questionnaires and identify similar content.
-You can try Harmony at <a href="https://app.harmonydata.org">app.harmonydata.org</a> and you can read our blog
-at <a href="https://harmonydata.org/blog/">harmonydata.org/blog/</a>.
+You can try Harmony at <a href="https://harmonydata.ac.uk/app">harmonydata.ac.uk/app</a> and you can read our blog
+at <a href="https://harmonydata.ac.uk/blog/">harmonydata.ac.uk/blog/</a>.
 
 CONTACT
 
