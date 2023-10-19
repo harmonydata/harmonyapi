@@ -33,7 +33,7 @@ You can read more at https://harmonydata.ac.uk.
 
 There is a live demo at: https://harmonydata.ac.uk/app
 
-![Screenshot](images/screenshot1.png)
+![Screenshot](https://github.com/harmonydata/.github/raw/main/profile/video.jpg)
 
 ## How does Harmony work in layman's terms?
 
