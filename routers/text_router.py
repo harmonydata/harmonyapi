@@ -107,6 +107,18 @@ def parse_instruments(
                         }
                     ],
                 },
+                "csv": {
+                    "summary": "CSV file",
+                    "description": "A small CSV file containing some items from the GAD-7.",
+                    "value": [
+                        {
+                            "file_id": "97bdeeffe6aaa5fa271724c2200f268",
+                            "file_name": "GAD-7.csv",
+                            "file_type": "csv",
+                            "content": "Question number\tQuestion text\tOptions\n1\tFeeling nervous, anxious, or on edge\tNot at all/Several days/More than half the days/Nearly every day\n2\tNot being able to stop or control worrying\tNot at all/Several days/More than half the days/Nearly every day\n3\tWorrying too much about different things\tNot at all/Several days/More than half the days/Nearly every day\n4\tTrouble relaxing\tNot at all/Several days/More than half the days/Nearly every day\n5\tBeing so restless that it is hard to sit still\tNot at all/Several days/More than half the days/Nearly every day\n6\tBecoming easily annoyed or irritable\tNot at all/Several days/More than half the days/Nearly every day\n7\tFeeling afraid, as if something awful might happen\tNot at all/Several days/More than half the days/Nearly every day",
+                        }
+                    ],
+                },
             }
         ),
     ]
