@@ -47,7 +47,7 @@ description = """
 Documentation for Harmony API.
 
 Harmony is a tool using AI which allows you to compare items from questionnaires and identify similar content.
-You can try Harmony at <a href="https://app.harmonydata.org">app.harmonydata.org</a> and you can read our blog at <a href="https://harmonydata.org/blog/">harmonydata.org/blog/</a>.
+You can try Harmony at <a href="https://harmonydata.ac.uk/app">harmonydata.ac.uk/app</a> and you can read our blog at <a href="https://harmonydata.ac.uk">harmonydata.ac.uk</a>.
 """
 
 app_fastapi = FastAPI(
