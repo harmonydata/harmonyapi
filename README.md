@@ -21,6 +21,8 @@ Please contact us at  https://harmonydata.ac.uk/contact or write to thomas@fastd
 
 Please visit https://github.com/harmonydata/harmony
 
+* 📰 The code for training the PDF extraction is here: https://github.com/harmonydata/pdf-questionnaire-extraction
+
 ## Looking for the original (Plotly Dash-based) Harmony?
 
 Please visit https://github.com/harmonydata/harmony_original
