@@ -45,7 +45,7 @@ json_data_gad_7_pdf = [
 
 endpoint = 'http://localhost:8000/text/parse'
     
-class TestApi(unittest.TestCase):
+class TestParse(unittest.TestCase):
 
     def test_gad_7_pdf(self):
         response = requests.post(endpoint, headers=headers, json=json_data_gad_7_pdf)

@@ -43,9 +43,9 @@ json_data_gad_7_pdf = [
 }
 ]
 
-endpoint = 'https://api.harmonydata.org/text/parse'
+endpoint = 'https://api.harmonydata.ac.uk/text/parse'
     
-class TestApi(unittest.TestCase):
+class TestParse(unittest.TestCase):
 
     def test_gad_7_pdf(self):
         response = requests.post(endpoint, headers=headers, json=json_data_gad_7_pdf)

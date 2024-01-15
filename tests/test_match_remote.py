@@ -115,7 +115,7 @@ json_data_to_match_gad_7 = {
     },
 }
 
-endpoint = 'http://localhost:8000/text/match'
+endpoint = 'https://api.harmonydata.ac.uk/text/match'
 
 response = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_7)
 
