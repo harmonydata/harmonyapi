@@ -52,7 +52,7 @@ time.sleep(1)
 
 dropdown_options = driver.find_elements(By.XPATH, '//span[contains(@class, "MuiListItemText-primary")]')
 
-dropdown_options[0].click()
+dropdown_options[1].click()
 
 dropdown_options[2].click()
 
@@ -78,4 +78,4 @@ time.sleep(1)
 class TestOneMatch(unittest.TestCase):
 
     def test_gad_7_correct_size_dictionary_response(self):
-        self.assertIn("Found 1 match", driver.page_source)
+        self.assertIn("Found 41 matches", driver.page_source)
