@@ -13,6 +13,8 @@ You can contact Harmony team at https://harmonydata.ac.uk/, or Thomas Wood at ht
 
 # How to contribute
 
+[Read our guide to contributing to Harmony here](https://harmonydata.ac.uk/contributing-to-harmony/).
+
 You can raise an issue in the [issue tracker](https://github.com/harmonydata/harmony/issues), and you can open a [pull request](https://github.com/harmonydata/harmony/pulls).
 
 Please contact us at  https://harmonydata.ac.uk/contact or write to thomas@fastdatascience.com if you would like to be involved in the project.
