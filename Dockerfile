@@ -6,6 +6,10 @@ COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
+RUN apt update && apt install -y default-jre tesseract-ocr
+
+RUN python -c 'from tika import parser; parser.from_buffer("abc", xmlContent=True)'
+
 COPY . .
 
 EXPOSE 80
