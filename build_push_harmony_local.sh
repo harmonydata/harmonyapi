@@ -1,2 +1,0 @@
-docker login -u harmonydata
-export COMMIT_ID=`git show -s --format=%ci_%h | sed s/[^_a-z0-9]//g | sed s/0[012]00_/_/g` && docker build -f Dockerfile_local -t harmonylocal -t harmonylocal:latest -t harmonylocal:$COMMIT_ID -t harmonydata/harmonylocal:latest -t harmonydata/harmonylocal:$COMMIT_ID --build-arg COMMIT_ID=$COMMIT_ID . && docker push harmonydata/harmonylocal --all-tags && echo "The container version is $COMMIT_ID"
