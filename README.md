@@ -7,6 +7,8 @@
 
 <!-- badges: end -->
 
+You can also join [our Discord server](https://discord.gg/harmonydata)!
+
 ## Who to contact?
 
 You can contact Harmony team at https://harmonydata.ac.uk/, or Thomas Wood at http://fastdatascience.com/.
