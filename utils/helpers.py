@@ -56,12 +56,12 @@ def get_mhc_embeddings() -> tuple:
     mhc_embeddings = np.zeros((0, 0))
 
     try:
-        data_path = os.getenv("HARMONY_DATA_PATH", os.getcwd())
+        data_path = "mhc_embeddings" # submodule
         with open(
-            os.path.join(data_path, "mhc_questions.json"), "r", encoding="utf-8"
+            os.path.join(data_path, "mhc_questions.txt"), "r", encoding="utf-8"
         ) as file:
             for line in file:
-                mhc_question = Question.parse_raw(line)
+                mhc_question = Question(question_text=line)
                 mhc_questions.append(mhc_question)
         with open(
             os.path.join(data_path, "mhc_all_metadatas.json"), "r", encoding="utf-8"
