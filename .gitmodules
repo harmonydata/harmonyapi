@@ -1,3 +1,6 @@
 [submodule "harmony"]
 	path = harmony
 	url = https://github.com/harmonydata/harmony.git
+[submodule "mhc_embeddings"]
+	path = mhc_embeddings
+	url = git@github.com:harmonydata/mhc_embeddings.git
