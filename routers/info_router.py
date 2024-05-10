@@ -37,3 +37,16 @@ router = APIRouter(prefix="/info")
 @router.get(path="/version")
 def show_version():
     return {"version_id": os.environ.get("COMMIT_ID", "Unknown"), "harmony_version": harmony.__version__}
+
+
+@router.get(path="/list-models")
+def show_models():
+    available_models = [
+        {"framework": "huggingface", "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"},
+        {"framework": "huggingface", "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"},
+        {"framework": "openai", "model": "text-embedding-ada-002"},
+        {"framework": "openai", "model": "text-embedding-3-large"},
+        {"framework": "google", "model": "textembedding-gecko@003"},
+        {"framework": "google", "model": "textembedding-gecko-multilingual"},
+    ]
+    return available_models
