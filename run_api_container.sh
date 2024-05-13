@@ -1,1 +1,1 @@
-docker run -p 8000:8000 harmonydata/harmonyapi
+docker run -p 8000:80 harmonydata/harmonyapi
