@@ -5,4 +5,4 @@
 [submodule "mhc_embeddings"]
 	path = mhc_embeddings
 	url = https://github.com/harmonydata/mhc_embeddings.git
-	branch = main
+	branch = new-models
