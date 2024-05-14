@@ -1,6 +1,8 @@
 [submodule "harmony"]
 	path = harmony
 	url = https://github.com/harmonydata/harmony.git
+	branch = new-models
 [submodule "mhc_embeddings"]
 	path = mhc_embeddings
 	url = https://github.com/harmonydata/mhc_embeddings.git
+	branch = main
