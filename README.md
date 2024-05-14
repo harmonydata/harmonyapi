@@ -161,7 +161,9 @@ Tika:
    HARMONY_DATA_PATH: /data
    HUGGING_FACE_SENTENCE_TRANSFORMER_MINILM_L12_V2_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
    HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH: /data/paraphrase-multilingual-mpnet-base-v2
-   OPENAI_API_KEY: sk-1234567890
+   OPENAI_API_KEY:
+   GOOGLE_APPLICATION_CREDENTIALS_B64:
+   GOOGLE_PROJECT_ID:
    TIKA_SERVER_ENDPOINT: http://tika:9998
 ```
 
@@ -176,6 +178,11 @@ transformer `sentence-transformers/paraphrase-multilingual-mpnet-base-v2`, if no
 transformer from HuggingFace Hub.
 
 `OPENAI_API_KEY` - To make use of the `OpenAI` models, make sure to fill in this environment variable.
+
+`GOOGLE_APPLICATION_CREDENTIALS_B64` - To make use of Google's `Vertex AI`, make sure to fill in this environment
+variable. This is the service account in base64 format. Make sure to give the service account the `Vertex AI` role.
+
+`GOOGLE_PROJECT_ID` - Also include the project ID to use `Vertex AI`.
 
 `TIKA_SERVER_ENDPOINT` - This is the endpoint where `Tika` is served from.
 
