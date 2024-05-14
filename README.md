@@ -183,8 +183,6 @@ transformer from HuggingFace Hub.
 This is the JSON service account file in base64 format. Make sure to give the service account the required `Vertex AI`
 role.
 
-`GOOGLE_PROJECT_ID` - include the project ID to use `Vertex AI`.
-
 `TIKA_SERVER_ENDPOINT` - This is the endpoint where `Tika` is served from.
 
 The deployed Harmony uses an Azure Function to run spaCy, available in the repository

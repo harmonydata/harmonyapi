@@ -14,7 +14,6 @@ services:
        HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH: /data/paraphrase-multilingual-mpnet-base-v2
        OPENAI_API_KEY:
        GOOGLE_APPLICATION_CREDENTIALS_B64:
-       GOOGLE_PROJECT_ID:
        TIKA_SERVER_ENDPOINT: http://tika:9998
      volumes:
         - harmonyapimount:/data
