@@ -81,7 +81,10 @@ def get_mhc_embeddings(model: Model) -> tuple:
                 mhc_meta = json.loads(line)
                 mhc_all_metadata.append(mhc_meta)
 
-        with open(os.path.join(data_path, "mhc_embeddings.npy"), "rb") as file:
+        with open(
+            os.path.join(data_path, f"mhc_embeddings_{model.name.replace('/', '-')}"),
+            "rb",
+        ) as file:
             mhc_embeddings = np.load(file, allow_pickle=True)
     except (Exception,) as e:
         print(f"Could not load MHC embeddings {str(e)}")
