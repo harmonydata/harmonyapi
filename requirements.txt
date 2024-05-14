@@ -13,3 +13,4 @@ spacy==3.5.3
 wget==3.2
 rocketry==2.5.1
 openai==1.28.1
+vertexai==1.49.0
