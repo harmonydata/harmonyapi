@@ -82,7 +82,7 @@ def get_mhc_embeddings(model: Model) -> tuple:
                 mhc_all_metadata.append(mhc_meta)
 
         with open(
-            os.path.join(data_path, f"mhc_embeddings_{model.name.replace('/', '-')}"),
+            os.path.join(data_path, f"mhc_embeddings_{model.name.replace('/', '-')}.npy"),
             "rb",
         ) as file:
             mhc_embeddings = np.load(file, allow_pickle=True)
