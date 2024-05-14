@@ -1,4 +1,4 @@
-# Harmony API 
+# Harmony API
 
 <!-- badges: start -->
 ![my badge](https://badgen.net/badge/Status/In%20Development/orange)
@@ -17,9 +17,11 @@ You can contact Harmony team at https://harmonydata.ac.uk/, or Thomas Wood at ht
 
 [Read our guide to contributing to Harmony here](https://harmonydata.ac.uk/contributing-to-harmony/).
 
-You can raise an issue in the [issue tracker](https://github.com/harmonydata/harmony/issues), and you can open a [pull request](https://github.com/harmonydata/harmony/pulls).
+You can raise an issue in the [issue tracker](https://github.com/harmonydata/harmony/issues), and you can open
+a [pull request](https://github.com/harmonydata/harmony/pulls).
 
-Please contact us at  https://harmonydata.ac.uk/contact or write to thomas@fastdatascience.com if you would like to be involved in the project.
+Please contact us at  https://harmonydata.ac.uk/contact or write to thomas@fastdatascience.com if you would like to be
+involved in the project.
 
 ## Looking for the Harmony Python library?
 
@@ -33,7 +35,12 @@ Please visit https://github.com/harmonydata/harmony_original
 
 ## About Harmony
 
-Harmony is a data harmonisation project that uses Natural Language Processing to help researchers make better use of existing data from different studies by supporting them with the harmonisation of various measures and items used in different studies. Harmony is a collaboration project between the [University of Ulster](https://www.ulster.ac.uk/), [University College London](https://ucl.ac.uk/), the [Universidade Federal de Santa Maria](https://www.ufsm.br/) in Brazil, and [Fast Data Science Ltd](https://fastdatascience.com/how-does-harmony-work/) in London.
+Harmony is a data harmonisation project that uses Natural Language Processing to help researchers make better use of
+existing data from different studies by supporting them with the harmonisation of various measures and items used in
+different studies. Harmony is a collaboration project between
+the [University of Ulster](https://www.ulster.ac.uk/), [University College London](https://ucl.ac.uk/),
+the [Universidade Federal de Santa Maria](https://www.ufsm.br/) in Brazil,
+and [Fast Data Science Ltd](https://fastdatascience.com/how-does-harmony-work/) in London.
 
 You can read more at https://harmonydata.ac.uk.
 
@@ -43,9 +50,10 @@ There is a live demo at: https://harmonydata.ac.uk/app
 
 ## How does Harmony work in layman's terms?
 
-Harmony compares questions from different instruments by converting them to a vector representation and calculating their similarity. You can read more at https://harmonydata.ac.uk/how-does-harmony-work/ 
+Harmony compares questions from different instruments by converting them to a vector representation and calculating
+their similarity. You can read more at https://harmonydata.ac.uk/how-does-harmony-work/
 
-## Do you want to run Harmony in your browser locally from a pre-built Docker container? 
+## Do you want to run Harmony in your browser locally from a pre-built Docker container?
 
 Download and install Docker:
 
@@ -70,7 +78,8 @@ If you are a Docker user, you can run Harmony from a pre-built Docker image.
 
 # Getting started: running and developing the API on your computer using Docker
 
-A prerequisite is Tika, which is a PDF parsing library. This must run as a server in Java. We use the Tika Python bindings.
+A prerequisite is Tika, which is a PDF parsing library. This must run as a server in Java. We use the Tika Python
+bindings.
 
 First, clone the API and make sure to clone with `--recurse-submodules`.
 
@@ -82,7 +91,8 @@ The Harmony API includes the `harmony` repo as a submodule.
 
 ## 1. Run Tika
 
-Download and install Java if you don't have it already. Download and install Apache Tika and run it on your computer https://tika.apache.org/download.html
+Download and install Java if you don't have it already. Download and install Apache Tika and run it on your
+computer https://tika.apache.org/download.html
 
 ```
 java -jar tika-server-standard-2.3.0.jar
@@ -124,9 +134,12 @@ You can deploy Harmony with Docker Compose - see `docker_compose.yml`.
 
 ## MHC data
 
-When the app is run, there is an environment variable `HARMONY_DATA_PATH` which is set to `/data` on the production server, and that's where you need to put any data files. But you could set it to anything you like on your local machine e.g. `/home/xxx/data/` and put the files there and it will find them.
+When the app is run, there is an environment variable `HARMONY_DATA_PATH` which is set to `/data` on the production
+server, and that's where you need to put any data files. But you could set it to anything you like on your local machine
+e.g. `/home/xxx/data/` and put the files there and it will find them.
 
-These 3 files are the files it looks for in the /data folder, although the app will run without them. It's a cached version of the Mental Health Catalogue:
+These 3 files are the files it looks for in the /data folder, although the app will run without them. It's a cached
+version of the Mental Health Catalogue:
 
 ```
 mhc_all_metadatas.json
@@ -140,24 +153,36 @@ The data files can be found here: https://github.com/harmonydata/harmony_deploym
 
 ## Environment variables
 
-There are also other environment variables which tell the API where to look to load the sentence transformer or contact Tika:
+These environment variables will tell the API where to look to load the sentence transformer or contact
+Tika:
 
+```yaml
+ environment:
+   HARMONY_DATA_PATH: /data
+   HUGGING_FACE_SENTENCE_TRANSFORMER_MINILM_L12_V2_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
+   HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH: /data/paraphrase-multilingual-mpnet-base-v2
+   OPENAI_API_KEY: sk-1234567890
+   TIKA_SERVER_ENDPOINT: http://tika:9998
 ```
-     environment:
-       HARMONY_DATA_PATH: /data
-       HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
-       TIKA_SERVER_ENDPOINT: http://tika:9998
-```
 
-`HARMONY_DATA_PATH` - determines where model files are stored. Defaults to `HOME DIRECTORY/harmony`
+`HARMONY_DATA_PATH` - This path will be used to store for example the cache files. Defaults to the `HOME DIRECTORY`.
 
-You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will work without it (it will download the sentence transformer from HuggingFace Hub, etc).
+`HUGGING_FACE_SENTENCE_TRANSFORMER_MINILM_L12_V2_PATH` - This path will be used for the Hugging Face sentence
+transformer `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, if not provided it will download the sentence
+transformer from HuggingFace Hub.
 
-The deployed Harmony uses an Azure Function to run spaCy, available in the repository here: https://github.com/harmonydata/spacyfunctionapp
+`HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH` - This path will be used for the Hugging Face sentence
+transformer `sentence-transformers/paraphrase-multilingual-mpnet-base-v2`, if not provided it will download the sentence
+transformer from HuggingFace Hub.
 
-You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will work without it (it will download the sentence transformer from HuggingFace Hub, etc).
+`OPENAI_API_KEY` - To make use of the `OpenAI` models, make sure to fill in this environment variable.
 
-So to run locally with Docker Compose you can do 
+`TIKA_SERVER_ENDPOINT` - This is the endpoint where `Tika` is served from.
+
+The deployed Harmony uses an Azure Function to run spaCy, available in the repository
+here: https://github.com/harmonydata/spacyfunctionapp
+
+So to run locally with Docker Compose you can do:
 
 ```
 docker compose up
@@ -170,7 +195,6 @@ If you are not running with Docker, you can run the individual components of the
 Architecture of the Harmony implementation on Azure with FastAPI:
 
 ![Screenshot](images/harmony_architecture_azure.png)
-
 
 # Getting started with the Harmony Python library
 
@@ -188,7 +212,8 @@ You can read the user guide at [./harmony_pypi_package/README.md](harmony_pypi_p
 
 ### Parsing a raw file into an Instrument
 
-If you want to read in a raw (unstructured) PDF or Excel file, you can do this via a POST request to the REST API. This will convert the file into an Instrument object in JSON.
+If you want to read in a raw (unstructured) PDF or Excel file, you can do this via a POST request to the REST API. This
+will convert the file into an Instrument object in JSON.
 
 ```
 curl -X 'POST' \
@@ -342,7 +367,8 @@ curl -X 'POST' \
 
 **Example response**
 
-The response contains a dictionary with three key-value pairs: `questions` (the questions matched in order), `matches` (the matrix of matches between all items), and `query_similarity` (the degree of similarity to the query term).
+The response contains a dictionary with three key-value pairs: `questions` (the questions matched in order), `matches` (
+the matrix of matches between all items), and `query_similarity` (the degree of similarity to the query term).
 
 ```
 {
@@ -365,7 +391,9 @@ The response contains a dictionary with three key-value pairs: `questions` (the 
 
 ## Alternative serverless deployment on AWS Lambda
 
-This repository also contains code for an alternative serverless deployment on AWS Lambda. The deployment has been divided into four AWS Lambda functions, managed by Terraform. Please refer to folder `serverless_deployment` for details.
+This repository also contains code for an alternative serverless deployment on AWS Lambda. The deployment has been
+divided into four AWS Lambda functions, managed by Terraform. Please refer to folder `serverless_deployment` for
+details.
 
 ![Screenshot](images/deployed_harmony_architecture.png)
 
@@ -382,7 +410,8 @@ thomas@fastdatascience.com
 - [Docker](https://docs.docker.com/) - Used for deployment to the web
 - [Apache Tika](https://tika.apache.org/) - Used for parsing PDFs to text
 - [HuggingFace](https://huggingface.co/) - Used for machine learning
-- [sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) - SentenceBERT model
+- [sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -
+  SentenceBERT model
 - [spaCy](https://spacy.io/) - Used for NLP analysis
 - [NLTK](https://www.nltk.org/) - Used for NLP analysis
 - [Scikit-Learn](https://scikit-learn.org/) - Used for machine learning
@@ -393,12 +422,14 @@ thomas@fastdatascience.com
 - spaCy: [MIT License](https://github.com/explosion/spaCy/blob/master/LICENSE)
 - NLTK: [Apache 2.0 License](https://github.com/nltk/nltk/blob/develop/LICENSE.txt)
 - Scikit-Learn: [BSD 3-Clause](https://github.com/scikit-learn/scikit-learn/blob/main/COPYING)
-- 
+-
+
 ## How do I cite Harmony?
 
 If you would like to cite the tool alone, you can cite:
 
-Wood, T.A., McElroy, E., Moltrecht, B., Ploubidis, G.B., Scopel Hoffmann, M., Harmony [Computer software], Version 1.0, accessed at https://harmonydata.ac.uk/app. Ulster University (2022)
+Wood, T.A., McElroy, E., Moltrecht, B., Ploubidis, G.B., Scopel Hoffmann, M., Harmony [Computer software], Version 1.0,
+accessed at https://harmonydata.ac.uk/app. Ulster University (2022)
 
 A BibTeX entry for LaTeX users is
 
@@ -414,7 +445,9 @@ A BibTeX entry for LaTeX users is
 
 You can also cite the wider Harmony project which is registered with the Open Science Foundation:
 
-McElroy, E., Moltrecht, B., Scopel Hoffmann, M., Wood, T. A., & Ploubidis, G. (2023, January 6). Harmony – A global platform for contextual harmonisation, translation and cooperation in mental health research. Retrieved from osf.io/bct6k
+McElroy, E., Moltrecht, B., Scopel Hoffmann, M., Wood, T. A., & Ploubidis, G. (2023, January 6). Harmony – A global
+platform for contextual harmonisation, translation and cooperation in mental health research. Retrieved from
+osf.io/bct6k
 
 ```
 @misc{McElroy_Moltrecht_Scopel Hoffmann_Wood_Ploubidis_2023,
@@ -444,19 +477,20 @@ CONTACT
 NAME: Thomas Wood
 URL: https://fastdatascience.com
 
-
 ## INDEX
 
-- 1. HEALTH CHECK
+-
+    1. HEALTH CHECK
 - 1.1 GET /health-check
-- 2. INFO
+-
+    2. INFO
 - 2.1 GET /info/version
-- 3. TEXT
+-
+    3. TEXT
 - 3.1 POST /text/parse
 - 3.2 POST /text/match
 - 3.3 POST /text/examples
 - 3.4 GET /text/cache
-
 
 ## API
 
@@ -471,11 +505,13 @@ REQUEST
 ```
 No request parameters
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 undefined
@@ -492,11 +528,13 @@ REQUEST
 ```
 No request parameters
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 undefined
@@ -530,11 +568,13 @@ text_content string The plain text content
 tables [undefined]
 }]
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 [{
@@ -587,9 +627,11 @@ Automatically identified nearest MHC match
 }]
 }]
 ```
+
 ```
 STATUS CODE - 422: Validation Error
 ```
+
 ```
 RESPONSE MODEL - application/json
 {
@@ -606,6 +648,7 @@ type* string
 }]
 }
 ```
+
 ## 3.2 POST /text/match
 
 Match
@@ -674,11 +717,13 @@ Model
 }
 }
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 {
@@ -706,9 +751,11 @@ Array of object:
 query_similarity [undefined]
 }
 ```
+
 ```
 STATUS CODE - 422: Validation Error
 ```
+
 ```
 RESPONSE MODEL - application/json
 {
@@ -725,6 +772,7 @@ type* string
 }]
 }
 ```
+
 ## 3.3 POST /text/examples
 
 Get Example Instruments
@@ -736,11 +784,13 @@ REQUEST
 ```
 No request parameters
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 [{
@@ -792,6 +842,7 @@ Automatically identified nearest MHC match
 }]
 }]
 ```
+
 ## 3.4 GET /text/cache
 
 Get Cache
@@ -802,11 +853,13 @@ REQUEST
 ```
 No request parameters
 ```
+
 RESPONSE
 
 ```
 STATUS CODE - 200: Successful Response
 ```
+
 ```
 RESPONSE MODEL - application/json
 {
