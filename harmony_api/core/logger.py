@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -23,30 +23,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-'''
+"""
 
-import os
+import logging
 
-from fastapi import APIRouter
-
-import harmony
-
-router = APIRouter(prefix="/info")
-
-
-@router.get(path="/version")
-def show_version():
-    return {"version_id": os.environ.get("COMMIT_ID", "Unknown"), "harmony_version": harmony.__version__}
+LOG_LEVEL = logging.INFO
+LOG_FORMAT = (
+    "%(asctime)-15s.%(msecs)d %(levelname)-5s --- [%(threadName)15s]"
+    " %(name)-15s : %(lineno)d : %(message)s"
+)
+LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
+BASE_LOGGER_NAME = "harmony-api"
 
 
-@router.get(path="/list-models")
-def show_models():
-    available_models = [
-        {"framework": "huggingface", "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"},
-        {"framework": "huggingface", "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"},
-        {"framework": "openai", "model": "text-embedding-ada-002"},
-        {"framework": "openai", "model": "text-embedding-3-large"},
-        {"framework": "google", "model": "textembedding-gecko@003"},
-        {"framework": "google", "model": "textembedding-gecko-multilingual"},
-    ]
-    return available_models
+def override_basic_config():
+    logger = logging.getLogger(BASE_LOGGER_NAME)
+    if logger.handlers:
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+    logger.setLevel(LOG_LEVEL)
+    logger_handler = logging.StreamHandler()
+    logger.addHandler(logger_handler)
+    logger_handler.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATE_FORMAT))
+    logger.propagate = False
+
+
+override_basic_config()
+
+
+def get_configured_logger(name: str) -> logging.Logger:
+    return logging.getLogger(f"{BASE_LOGGER_NAME}.{name}")

@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -22,13 +22,36 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
 
-'''
+import os
+from typing import List
 
-from hashlib import sha256
+import harmony
+from fastapi import APIRouter, status
+from harmony.schemas.model import Model, AVAILABLE_MODELS
+
+router = APIRouter(prefix="/info")
 
 
-def get_hash_value(text: str) -> str:
-    """Get hash value"""
+@router.get(path="/version", status_code=status.HTTP_200_OK)
+def show_version():
+    """
+    Show version.
+    """
 
-    return sha256(text.encode()).hexdigest()
+    return {
+        "version_id": os.environ.get("COMMIT_ID", "Unknown"),
+        "harmony_version": harmony.__version__,
+    }
+
+
+@router.get(
+    path="/list-models", status_code=status.HTTP_200_OK, response_model=List[Model]
+)
+def show_models() -> List[Model]:
+    """
+    Show models.
+    """
+
+    return AVAILABLE_MODELS

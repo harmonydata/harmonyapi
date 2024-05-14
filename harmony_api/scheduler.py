@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -22,6 +22,34 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
 
-'''
+from fastapi.concurrency import run_in_threadpool
+from rocketry import Rocketry
+from rocketry.conds import cron
 
+from harmony_api.services.instruments_cache import InstrumentsCache
+from harmony_api.services.vectors_cache import VectorsCache
+
+app = Rocketry(executation="async")
+
+
+@app.task(cron("0 */12 * * *"))
+async def do_every_12th_hour():
+    """
+    Save the caches to disk every 12th hour.
+
+    Runs at minute 0 past every 12th hour
+    """
+
+    # Save instruments cache to disk
+    try:
+        await run_in_threadpool(InstrumentsCache().save)
+    except (Exception,) as e:
+        print(f"Could not save instruments cache: {str(e)}.")
+
+    # Save vectors cache to disk
+    try:
+        await run_in_threadpool(VectorsCache().save)
+    except (Exception,) as e:
+        print(f"Could not save vectors cache: {str(e)}.")

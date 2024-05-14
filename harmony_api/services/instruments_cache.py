@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -22,17 +22,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-'''
+"""
 
 import json
 import os
+from hashlib import sha256
 from typing import List
 
 from harmony.schemas.requests.text import Instrument
 
-import constants
-from utils.singleton_meta import SingletonMeta
+from harmony_api import constants
+from harmony_api.utils.singleton_meta import SingletonMeta
 
 data_path = os.getenv("HARMONY_DATA_PATH", os.getcwd())
 cache_file_path = os.path.join(data_path, constants.INSTRUMENTS_CACHE_JSON_FILENAME)
@@ -40,7 +40,7 @@ cache_file_path = os.path.join(data_path, constants.INSTRUMENTS_CACHE_JSON_FILEN
 
 class InstrumentsCache(metaclass=SingletonMeta):
     """
-    This class is responsible for caching instruments (Singleton class)
+    This class is responsible for caching instruments (Singleton class).
     """
 
     def __init__(self):
@@ -49,15 +49,20 @@ class InstrumentsCache(metaclass=SingletonMeta):
         self.__load()
 
     def __load(self):
-        """Load cache"""
+        """
+        Load cache.
+        """
 
         if os.path.isfile(cache_file_path):
             with open(cache_file_path, "r", encoding="utf8") as file:
-                cache = json.loads(file.read())
+                try:
+                    cache: dict[str, list] = json.loads(file.read())
+                except json.decoder.JSONDecodeError:
+                    cache: dict[str, list] = {}
         else:
-            cache = {}
+            cache: dict[str, list] = {}
 
-        # Parse the cache
+        #  Dict to instruments
         cache_parsed: dict[str, List[Instrument]] = {}
         for key, value in cache.items():
             instruments = [Instrument.parse_obj(x) for x in value]
@@ -66,36 +71,59 @@ class InstrumentsCache(metaclass=SingletonMeta):
         self.__cache = cache_parsed
 
     def set(self, key: str, value: List[Instrument]):
-        """Set key value pair"""
+        """
+        :param key: The cache key.
+        :param value: The cache value.
+
+        Set key value pair.
+        """
 
         self.__cache[key] = value
 
     def get(self, key: str) -> List[Instrument]:
-        """Get value by key"""
+        """
+        :param key: The cache key.
+
+        Get value by key.
+        """
 
         return self.__cache.get(key)
 
     def has(self, key: str) -> bool:
-        """Check if key is in cache"""
+        """
+        :param key: The cache key.
+
+        Check if key is in cache.
+        """
 
         return key in self.__cache
 
     def get_cache(self) -> dict[str, List[Instrument]]:
-        """Get the whole cache"""
+        """
+        Get the whole cache from memory.
+        """
 
         return self.__cache
 
     def save(self):
-        """Save cache"""
+        """
+        Save cache to disk.
+        """
 
-        # Parse the cache
+        # Instruments to dict
         cache_parsed: dict[str, List] = {}
         for key, value in self.__cache.items():
             instruments = [x.dict() for x in value]
             cache_parsed[key] = instruments
 
-        # Save
         with open(cache_file_path, "w", encoding="utf8") as file:
             file.write(json.dumps(cache_parsed, ensure_ascii=False))
 
         print(f"INFO:\t  Cache {constants.INSTRUMENTS_CACHE_JSON_FILENAME} saved...")
+
+    def generate_key(self, text: str) -> str:
+        """
+        Generate key.
+        """
+
+        return sha256(text.encode()).hexdigest()

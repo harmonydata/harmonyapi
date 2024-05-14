@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -23,16 +23,59 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-'''
+"""
 
-"""Singleton meta class"""
+import os
+from typing import Union
+
+from pydantic import BaseSettings
 
 
-class SingletonMeta(type):
-    _instances = {}
+class Settings(BaseSettings):
+    # General harmony_api config
+    VERSION = "2.0"
+    APP_TITLE = "Harmony API"
+    TIKA_ENDPOINT = os.getenv("TIKA_ENDPOINT", "")
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
+
+class DevSettings(Settings):
+    SERVER_HOST = "0.0.0.0"
+    DEBUG = True
+    PORT = 8000
+    RELOAD = True
+    CORS = {
+        "origins": [
+            "*",
+        ],
+        "allow_credentials": True,
+        "allow_methods": ["*"],
+        "allow_headers": ["*"],
+    }
+
+
+class ProdSettings(Settings):
+    # TODO change
+    SERVER_HOST = "0.0.0.0"
+    DEBUG = False
+    PORT = 8000
+    RELOAD = False
+    CORS = {
+        "origins": [
+            "*",
+        ],
+        "allow_credentials": True,
+        "allow_methods": ["*"],
+        "allow_headers": ["*"],
+    }
+
+
+def get_settings():
+    env = os.getenv("STAGE", "dev")
+    settings_type = {
+        "dev": DevSettings(),
+        "prod": ProdSettings(),
+    }
+    return settings_type[env]
+
+
+settings: Union[DevSettings | ProdSettings] = get_settings()

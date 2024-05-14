@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -22,35 +22,34 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
 
-'''
-
-import sys
 import uuid
 from typing import Annotated
 from typing import List
 
 from fastapi import APIRouter, Body, status
-
-from services.instruments_cache import InstrumentsCache
-from services.vectors_cache import VectorsCache
-from utils import cache_helper
-from utils import helpers
-
-from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.matching.default_matcher import match_instruments
-from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
-from harmony.schemas.responses.text import MatchResponse, CacheResponse
 from harmony.matching.negator import negate
+from harmony.schemas.model import Model, AVAILABLE_MODELS
+from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
+from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
+from harmony.schemas.vector import Vector
+from harmony.schemas.responses.text import MatchResponse, CacheResponse
+
+from harmony_api import helpers
+from harmony_api import http_exceptions
+from harmony_api.services.instruments_cache import InstrumentsCache
+from harmony_api.services.vectors_cache import VectorsCache
 
 router = APIRouter(prefix="/text")
-
-# Get mhc embeddings
-mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings()
 
 # Cache
 instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
+
+# Available models as dicts
+AVAILABLE_MODELS_DICTS: List[dict] = [x.dict() for x in AVAILABLE_MODELS]
 
 
 @router.post(path="/parse")
@@ -126,10 +125,10 @@ def parse_instruments(
     """
     Parse PDFs or Excels or text files into Instruments, and identifies the language.
 
-    If the file is binary (Excel or PDF), you must supply each file with the content in MIME format and the bytes in base64 encoding, like the example RawFile in the schema.
+    If the file is binary (Excel or PDF), you must supply each file with the content in MIME format and the bytes in
+    base64 encoding, like the example RawFile in the schema.
 
     If the file is plain text, supply the file content as a standard string.
-
     """
 
     # Assign any missing IDs
@@ -137,16 +136,17 @@ def parse_instruments(
         if file.file_id is None:
             file.file_id = uuid.uuid4().hex
 
+    # List of all the instruments
     instruments: List[Instrument] = []
 
     # A list of files whose instruments are not cached
     files_with_no_cached_instruments = []
 
     for file in files:
-        hash_value = cache_helper.get_hash_value(file.content)
-        if instruments_cache.has(hash_value):
+        instrument_key = instruments_cache.generate_key(file.content)
+        if instruments_cache.has(instrument_key):
             # If instruments are cached
-            instruments.extend(instruments_cache.get(hash_value))
+            instruments.extend(instruments_cache.get(instrument_key))
         else:
             # If instruments are not cached
             files_with_no_cached_instruments.append(file)
@@ -156,20 +156,29 @@ def parse_instruments(
         new_instruments = convert_files_to_instruments(
             [file_with_no_cached_instruments]
         )
-        hash_value = cache_helper.get_hash_value(
+        instrument_key = instruments_cache.generate_key(
             file_with_no_cached_instruments.content
         )
-        instruments_cache.set(hash_value, new_instruments)
+        instruments_cache.set(instrument_key, new_instruments)
         instruments.extend(new_instruments)
 
     return instruments
 
 
-@router.post(path="/match")
+@router.post(
+    path="/match", response_model=MatchResponse, status_code=status.HTTP_200_OK
+)
 def match(match_body: MatchBody) -> MatchResponse:
     """
-    Match instruments
+    Match instruments.
     """
+
+    # Model
+    model = match_body.model
+    if model.dict() not in AVAILABLE_MODELS_DICTS:
+        raise http_exceptions.CouldNotProcessRequestHTTPException(
+            "Could not process request because the model does not exist."
+        )
 
     # Assign any missing IDs
     for instrument in match_body.instruments:
@@ -189,41 +198,60 @@ def match(match_body: MatchBody) -> MatchResponse:
     instruments = match_body.instruments
 
     # Get cached vectors of texts
-    texts_cached_vectors: dict[str, List[float]] = {}
+    cached_vectors_dict: dict[str, Vector] = {}
     for instrument in instruments:
         for question in instrument.questions:
             # Text
             question_text = question.question_text
-            hash_value_question_text = cache_helper.get_hash_value(question_text)
-            if vectors_cache.has(hash_value_question_text):
-                cached_vector = vectors_cache.get(hash_value_question_text)
-                texts_cached_vectors[question_text] = cached_vector[question_text]
+            question_text_key = vectors_cache.generate_key(
+                text=question_text, model_name=model.name
+            )
+            if vectors_cache.has(question_text_key):
+                cached_vector = vectors_cache.get(question_text_key)
+                cached_vectors_dict[question_text] = cached_vector
 
             # Negated text
             negated_text = negate(question_text, instrument.language)
-            hash_value_negated_text = cache_helper.get_hash_value(negated_text)
-            if vectors_cache.has(hash_value_negated_text):
-                cached_vector = vectors_cache.get(hash_value_negated_text)
-                texts_cached_vectors[negated_text] = cached_vector[negated_text]
+            negated_text_key = vectors_cache.generate_key(
+                negated_text, model_name=model.name
+            )
+            if vectors_cache.has(negated_text_key):
+                cached_vector = vectors_cache.get(negated_text_key)
+                cached_vectors_dict[negated_text] = cached_vector
+
+    # Get cached vector of query
+    if query:
+        query_key = vectors_cache.generate_key(text=query, model_name=model.name)
+        if vectors_cache.has(query_key):
+            cached_vector = vectors_cache.get(query_key)
+            cached_vectors_dict[query] = cached_vector
+
+    # Get MHC embeddings
+    mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings(
+        model=model
+    )
 
     # Match instruments
     questions, matches, query_similarity, new_vectors = match_instruments(
         instruments=instruments,
+        model=model,
         query=query,
         mhc_questions=mhc_questions,
         mhc_all_metadatas=mhc_all_metadata,
         mhc_embeddings=mhc_embeddings,
-        texts_cached_vectors=texts_cached_vectors,
+        cached_vectors_dict=cached_vectors_dict,
     )
 
     # Add new vectors to cache
-    for key, value in new_vectors.items():
-        hash_value = cache_helper.get_hash_value(key)
-        if not vectors_cache.has(hash_value):
-            vectors_cache.set(hash_value, {key: value})
+    for vector in new_vectors:
+        text_key = vectors_cache.generate_key(text=vector.text, model_name=vector.model)
+        if not vectors_cache.has(text_key):
+            vectors_cache.set(text_key, vector)
 
+    # List of matches
     matches_jsonable = matches.tolist()
 
+    # Query similarity
     if query_similarity is not None:
         query_similarity = query_similarity.tolist()
 
@@ -236,10 +264,12 @@ def match(match_body: MatchBody) -> MatchResponse:
     return response
 
 
-@router.post(path="/examples")
+@router.post(
+    path="/examples", response_model=List[Instrument], status_code=status.HTTP_200_OK
+)
 def get_example_instruments() -> List[Instrument]:
     """
-    Get example instruments
+    Get example instruments.
     """
 
     return helpers.get_example_instruments()
@@ -248,18 +278,17 @@ def get_example_instruments() -> List[Instrument]:
 @router.get(path="/cache", response_model=CacheResponse, status_code=status.HTTP_200_OK)
 def get_cache() -> CacheResponse:
     """
-    Get all items in cache
+    Get all items from cache.
     """
 
     instruments_list = []
-    for value in instruments_cache.get_cache().values():
-        for v in value:
-            instruments_list.append(v)
+    for instrument_cache_values in instruments_cache.get_cache().values():
+        for instrument_cache_value in instrument_cache_values:
+            instruments_list.append(instrument_cache_value)
 
     vectors_list = []
-    for value in vectors_cache.get_cache().values():
-        for k, v in value.items():
-            vectors_list.append({"text": k, "vector": v})
+    for vector_cache_value in vectors_cache.get_cache().values():
+        vectors_list.append(vector_cache_value)
 
     return CacheResponse(
         instruments=instruments_list,

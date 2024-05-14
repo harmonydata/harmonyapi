@@ -1,4 +1,4 @@
-'''
+"""
 MIT License
 
 Copyright (c) 2023 Ulster University (https://www.ulster.ac.uk).
@@ -22,10 +22,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-'''
+"""
 
 import sys
+
 sys.path.append("./harmony/src")
 
 import asyncio
@@ -35,19 +35,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from core.settings import settings
-from routers.health_check_router import router as health_check_router
-from routers.info_router import router as info_router
-from routers.text_router import router as text_router
-from services.instruments_cache import InstrumentsCache
-from services.scheduler import app as app_rocketry
-from services.vectors_cache import VectorsCache
+from harmony_api.core.settings import settings
+from harmony_api.routers.health_check_router import router as health_check_router
+from harmony_api.routers.info_router import router as info_router
+from harmony_api.routers.text_router import router as text_router
+from harmony_api.services.instruments_cache import InstrumentsCache
+from harmony_api.scheduler import app as app_rocketry
+from harmony_api.services.vectors_cache import VectorsCache
 
 description = """
 Documentation for Harmony API.
 
 Harmony is a tool using AI which allows you to compare items from questionnaires and identify similar content.
-You can try Harmony at <a href="https://harmonydata.ac.uk/app">harmonydata.ac.uk/app</a> and you can read our blog at <a href="https://harmonydata.ac.uk">harmonydata.ac.uk</a>.
+You can try Harmony at <a href="https://harmonydata.ac.uk/app">harmonydata.ac.uk/harmony_api</a> and you can read our blog at <a href="https://harmonydata.ac.uk">harmonydata.ac.uk</a>.
 """
 
 app_fastapi = FastAPI(
@@ -116,7 +116,7 @@ async def main():
 
     # Start both applications (FastAPI & Rocketry)
     print("INFO:\t  Starting applications...")
-    await asyncio.wait([scheduler, api])
+    await asyncio.wait([api, scheduler])
 
 
 if __name__ == "__main__":
