@@ -6,7 +6,9 @@ import openai
 from harmony_api.constants import OPENAI_3_LARGE, OPENAI_ADA_02
 
 # OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 
 
 def __get_openai_embeddings(texts: list[str], model_name: str) -> np.ndarray:
