@@ -30,7 +30,6 @@ from typing import List
 
 import numpy as np
 from harmony.schemas.requests.text import Instrument, Question
-from harmony.schemas.model import Model
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,7 +49,7 @@ def get_example_instruments() -> List[Instrument]:
     return example_instruments
 
 
-def get_mhc_embeddings(model: Model) -> tuple:
+def get_mhc_embeddings(model_name: str) -> tuple:
     """Get mhc embeddings"""
 
     mhc_questions = []
@@ -58,7 +57,7 @@ def get_mhc_embeddings(model: Model) -> tuple:
     mhc_embeddings = np.zeros((0, 0))
 
     # Only return the MHC embeddings for the Hugging Face models
-    if model.name not in [
+    if model_name not in [
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
     ]:
@@ -82,7 +81,7 @@ def get_mhc_embeddings(model: Model) -> tuple:
                 mhc_all_metadata.append(mhc_meta)
 
         with open(
-            os.path.join(data_path, f"mhc_embeddings_{model.name.replace('/', '-')}.npy"),
+            os.path.join(data_path, f"mhc_embeddings_{model_name.replace('/', '-')}.npy"),
             "rb",
         ) as file:
             mhc_embeddings = np.load(file, allow_pickle=True)

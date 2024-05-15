@@ -153,29 +153,19 @@ The data files can be found here: https://github.com/harmonydata/harmony_deploym
 
 ## Environment variables
 
-These environment variables will tell the API where to look to load the sentence transformer or contact
+There are also other environment variables which tell the API where to look to load the sentence transformer or contact
 Tika:
 
 ```yml
  environment:
    HARMONY_DATA_PATH: /data
-   HUGGING_FACE_SENTENCE_TRANSFORMER_MINILM_L12_V2_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
-   HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH: /data/paraphrase-multilingual-mpnet-base-v2
+   HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
    OPENAI_API_KEY:
    GOOGLE_APPLICATION_CREDENTIALS_B64:
-   GOOGLE_PROJECT_ID:
    TIKA_SERVER_ENDPOINT: http://tika:9998
 ```
 
 `HARMONY_DATA_PATH` - This path will be used to store for example the cache files. Defaults to the `HOME DIRECTORY`.
-
-`HUGGING_FACE_SENTENCE_TRANSFORMER_MINILM_L12_V2_PATH` - Optional, this path will be used for the Hugging Face sentence
-transformer `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, if not provided it will download the sentence
-transformer from HuggingFace Hub.
-
-`HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH` - Optional, this path will be used for the Hugging Face sentence
-transformer `sentence-transformers/paraphrase-multilingual-mpnet-base-v2`, if not provided it will download the sentence
-transformer from HuggingFace Hub.
 
 `OPENAI_API_KEY` - The OpenAI API key.
 
@@ -184,6 +174,9 @@ This is the JSON service account file in base64 format. Make sure to give the se
 role.
 
 `TIKA_SERVER_ENDPOINT` - This is the endpoint where `Tika` is served from.
+
+You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will
+work without it (it will download the sentence transformer from HuggingFace Hub, etc).
 
 The deployed Harmony uses an Azure Function to run spaCy, available in the repository
 here: https://github.com/harmonydata/spacyfunctionapp

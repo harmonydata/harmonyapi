@@ -28,17 +28,28 @@ import uuid
 from typing import Annotated
 from typing import List
 
+import numpy as np
 from fastapi import APIRouter, Body, status
-from harmony.matching.default_matcher import match_instruments
+
+from harmony.matching.default_matcher import match_instruments_with_function
 from harmony.matching.negator import negate
-from harmony.schemas.model import AVAILABLE_MODELS
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
-from harmony.schemas.text_vector import TextVector
 from harmony.schemas.responses.text import MatchResponse, CacheResponse
-
 from harmony_api import helpers
 from harmony_api import http_exceptions
+from harmony_api.constants import (
+    AVAILABLE_MODELS,
+    GOOGLE_GECKO_MULTILINGUAL,
+    GOOGLE_GECKO_003,
+    OPENAI_3_LARGE,
+    OPENAI_ADA_02,
+    HUGGINGFACE_MPNET_BASE_V2,
+    HUGGINGFACE_MINILM_L12_V2,
+)
+from harmony_api.services import google_embeddings
+from harmony_api.services import hugging_face_embeddings
+from harmony_api.services import openai_embeddings
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
 
@@ -47,9 +58,6 @@ router = APIRouter(prefix="/text")
 # Cache
 instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
-
-# Available models as dicts
-AVAILABLE_MODELS_DICTS: List[dict] = [x.dict() for x in AVAILABLE_MODELS]
 
 
 @router.post(path="/parse")
@@ -174,8 +182,8 @@ def match(match_body: MatchBody) -> MatchResponse:
     """
 
     # Model
-    model = match_body.model
-    if model.dict() not in AVAILABLE_MODELS_DICTS:
+    model = match_body.parameters
+    if model.dict() not in AVAILABLE_MODELS:
         raise http_exceptions.CouldNotProcessRequestHTTPException(
             "Could not process request because the model does not exist."
         )
@@ -198,55 +206,123 @@ def match(match_body: MatchBody) -> MatchResponse:
     instruments = match_body.instruments
 
     # Get cached vectors of texts
-    cached_text_vectors_dict: dict[str, TextVector] = {}
+    cached_text_vectors_dict: dict[str, List[float]] = {}
     for instrument in instruments:
         for question in instrument.questions:
             # Text
             question_text = question.question_text
             question_text_key = vectors_cache.generate_key(
-                text=question_text, model_name=model.name
+                text=question_text, model_name=model.model
             )
             if vectors_cache.has(question_text_key):
                 cached_vector = vectors_cache.get(question_text_key)
-                cached_text_vectors_dict[question_text] = cached_vector
+                cached_text_vectors_dict[question_text] = cached_vector[question_text]
 
             # Negated text
             negated_text = negate(question_text, instrument.language)
             negated_text_key = vectors_cache.generate_key(
-                negated_text, model_name=model.name
+                negated_text, model_name=model.model
             )
             if vectors_cache.has(negated_text_key):
                 cached_vector = vectors_cache.get(negated_text_key)
-                cached_text_vectors_dict[negated_text] = cached_vector
+                cached_text_vectors_dict[negated_text] = cached_vector[negated_text]
 
     # Get cached vector of query
     if query:
-        query_key = vectors_cache.generate_key(text=query, model_name=model.name)
+        query_key = vectors_cache.generate_key(text=query, model_name=model.model)
         if vectors_cache.has(query_key):
             cached_vector = vectors_cache.get(query_key)
-            cached_text_vectors_dict[query] = cached_vector
+            cached_text_vectors_dict[query] = cached_vector[query]
 
     # Get MHC embeddings
     mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings(
-        model=model
+        model_name=model.model
     )
 
-    # Match instruments
-    questions, matches, query_similarity, new_text_vectors = match_instruments(
-        instruments=instruments,
-        model=model,
-        query=query,
-        mhc_questions=mhc_questions,
-        mhc_all_metadatas=mhc_all_metadata,
-        mhc_embeddings=mhc_embeddings,
-        cached_text_vectors_dict=cached_text_vectors_dict,
-    )
+    questions = []
+    matches = []
+    query_similarity = np.array([])
+    new_text_vectors: dict[str, list[float]] = {}
+
+    # Match
+    if model.model == HUGGINGFACE_MINILM_L12_V2["model"]:
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=hugging_face_embeddings.get_hugging_face_embeddings_minilm_l12_v2,
+            )
+        )
+    elif model.model == HUGGINGFACE_MPNET_BASE_V2["model"]:
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=hugging_face_embeddings.get_hugging_face_embeddings_mpnet_base_v2,
+            )
+        )
+    elif model.model == OPENAI_ADA_02["model"]:
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=openai_embeddings.get_openai_embeddings_ada_02,
+            )
+        )
+    elif model.model == OPENAI_3_LARGE["model"]:
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=openai_embeddings.get_openai_embeddings_3_large,
+            )
+        )
+    elif model.model == GOOGLE_GECKO_MULTILINGUAL["model"]:
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=google_embeddings.get_google_embeddings_gecko_multilingual,
+            )
+        )
+    elif model.model == GOOGLE_GECKO_003["model"]:
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=google_embeddings.get_google_embeddings_gecko_003,
+            )
+        )
 
     # Add new vectors to cache
-    for text_vector in new_text_vectors:
-        text_vector_key = vectors_cache.generate_key(text=text_vector.text, model_name=text_vector.model)
-        if not vectors_cache.has(text_vector_key):
-            vectors_cache.set(text_vector_key, text_vector)
+    for key, value in new_text_vectors.items():
+        vector_key = vectors_cache.generate_key(text=key, model_name=model.model)
+        if not vectors_cache.has(vector_key):
+            vectors_cache.set(vector_key, {key: value})
 
     # List of matches
     matches_jsonable = matches.tolist()

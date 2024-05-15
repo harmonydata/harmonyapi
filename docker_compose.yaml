@@ -10,8 +10,7 @@ services:
      restart: always
      environment:
        HARMONY_DATA_PATH: /data
-       HUGGING_FACE_SENTENCE_TRANSFORMER_MINILM_L12_V2_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
-       HUGGING_FACE_SENTENCE_TRANSFORMER_MPNET_BASE_V2_PATH: /data/paraphrase-multilingual-mpnet-base-v2
+       HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
        OPENAI_API_KEY:
        GOOGLE_APPLICATION_CREDENTIALS_B64:
        TIKA_SERVER_ENDPOINT: http://tika:9998

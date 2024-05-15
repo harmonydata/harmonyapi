@@ -28,8 +28,7 @@ import json
 import os
 from hashlib import sha256
 
-from harmony.schemas.text_vector import TextVector
-
+from typing import List
 from harmony_api import constants
 from harmony_api.utils.singleton_meta import SingletonMeta
 
@@ -43,7 +42,7 @@ class VectorsCache(metaclass=SingletonMeta):
     """
 
     def __init__(self):
-        self.__cache: dict[str, TextVector] = {}
+        self.__cache: dict[str, dict[str, List[float]]] = {}
 
         self.__load()
 
@@ -61,15 +60,9 @@ class VectorsCache(metaclass=SingletonMeta):
         else:
             cache: dict[str, dict] = {}
 
-        # Dict to vectors
-        cache_parsed: dict[str, TextVector] = {}
-        for key, value in cache.items():
-            vector = TextVector.parse_obj(value)
-            cache_parsed[key] = vector
+        self.__cache = cache
 
-        self.__cache = cache_parsed
-
-    def set(self, key: str, value: TextVector):
+    def set(self, key: str, value: dict[str, List[float]]):
         """
         :param key: The cache key.
         :param value: The cache value.
@@ -79,7 +72,7 @@ class VectorsCache(metaclass=SingletonMeta):
 
         self.__cache[key] = value
 
-    def get(self, key: str) -> TextVector:
+    def get(self, key: str) -> dict[str, List[float]]:
         """
         :param key: The cache key.
 
@@ -97,7 +90,7 @@ class VectorsCache(metaclass=SingletonMeta):
 
         return key in self.__cache
 
-    def get_cache(self) -> dict[str, TextVector]:
+    def get_cache(self) -> dict[str, dict[str, List[float]]]:
         """
         Get the whole cache from memory.
         """
@@ -109,13 +102,8 @@ class VectorsCache(metaclass=SingletonMeta):
         Save cache to disk.
         """
 
-        # Vectors to dict
-        cache_parsed: dict[str, dict] = {}
-        for key, value in self.__cache.items():
-            cache_parsed[key] = value.dict()
-
         with open(cache_file_path, "w", encoding="utf8") as file:
-            file.write(json.dumps(cache_parsed, ensure_ascii=False))
+            file.write(json.dumps(self.__cache, ensure_ascii=False))
 
         print(f"INFO:\t  Cache {constants.VECTORS_CACHE_JSON_FILENAME} saved...")
 
@@ -124,6 +112,6 @@ class VectorsCache(metaclass=SingletonMeta):
         Generate key.
         """
 
-        text_full = f"{model_name}:{text}"
+        text_full = f"{model_name}.{text}"
 
         return sha256(text_full.encode()).hexdigest()

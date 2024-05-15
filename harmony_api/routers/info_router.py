@@ -29,7 +29,7 @@ from typing import List
 
 import harmony
 from fastapi import APIRouter, status
-from harmony.schemas.model import Model, AVAILABLE_MODELS
+from harmony_api.constants import AVAILABLE_MODELS
 
 router = APIRouter(prefix="/info")
 
@@ -47,9 +47,9 @@ def show_version():
 
 
 @router.get(
-    path="/list-models", status_code=status.HTTP_200_OK, response_model=List[Model]
+    path="/list-models", status_code=status.HTTP_200_OK, response_model=List[dict]
 )
-def show_models() -> List[Model]:
+def show_models() -> List[dict]:
     """
     Show models.
     """
