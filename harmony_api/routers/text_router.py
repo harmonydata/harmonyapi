@@ -31,10 +31,10 @@ from typing import List
 from fastapi import APIRouter, Body, status
 from harmony.matching.default_matcher import match_instruments
 from harmony.matching.negator import negate
-from harmony.schemas.model import Model, AVAILABLE_MODELS
+from harmony.schemas.model import AVAILABLE_MODELS
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
-from harmony.schemas.vector import Vector
+from harmony.schemas.text_vector import TextVector
 from harmony.schemas.responses.text import MatchResponse, CacheResponse
 
 from harmony_api import helpers
@@ -198,7 +198,7 @@ def match(match_body: MatchBody) -> MatchResponse:
     instruments = match_body.instruments
 
     # Get cached vectors of texts
-    cached_vectors_dict: dict[str, Vector] = {}
+    cached_text_vectors_dict: dict[str, TextVector] = {}
     for instrument in instruments:
         for question in instrument.questions:
             # Text
@@ -208,7 +208,7 @@ def match(match_body: MatchBody) -> MatchResponse:
             )
             if vectors_cache.has(question_text_key):
                 cached_vector = vectors_cache.get(question_text_key)
-                cached_vectors_dict[question_text] = cached_vector
+                cached_text_vectors_dict[question_text] = cached_vector
 
             # Negated text
             negated_text = negate(question_text, instrument.language)
@@ -217,14 +217,14 @@ def match(match_body: MatchBody) -> MatchResponse:
             )
             if vectors_cache.has(negated_text_key):
                 cached_vector = vectors_cache.get(negated_text_key)
-                cached_vectors_dict[negated_text] = cached_vector
+                cached_text_vectors_dict[negated_text] = cached_vector
 
     # Get cached vector of query
     if query:
         query_key = vectors_cache.generate_key(text=query, model_name=model.name)
         if vectors_cache.has(query_key):
             cached_vector = vectors_cache.get(query_key)
-            cached_vectors_dict[query] = cached_vector
+            cached_text_vectors_dict[query] = cached_vector
 
     # Get MHC embeddings
     mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings(
@@ -232,21 +232,21 @@ def match(match_body: MatchBody) -> MatchResponse:
     )
 
     # Match instruments
-    questions, matches, query_similarity, new_vectors = match_instruments(
+    questions, matches, query_similarity, new_text_vectors = match_instruments(
         instruments=instruments,
         model=model,
         query=query,
         mhc_questions=mhc_questions,
         mhc_all_metadatas=mhc_all_metadata,
         mhc_embeddings=mhc_embeddings,
-        cached_vectors_dict=cached_vectors_dict,
+        cached_text_vectors_dict=cached_text_vectors_dict,
     )
 
     # Add new vectors to cache
-    for vector in new_vectors:
-        text_key = vectors_cache.generate_key(text=vector.text, model_name=vector.model)
-        if not vectors_cache.has(text_key):
-            vectors_cache.set(text_key, vector)
+    for text_vector in new_text_vectors:
+        text_vector_key = vectors_cache.generate_key(text=text_vector.text, model_name=text_vector.model)
+        if not vectors_cache.has(text_vector_key):
+            vectors_cache.set(text_vector_key, text_vector)
 
     # List of matches
     matches_jsonable = matches.tolist()

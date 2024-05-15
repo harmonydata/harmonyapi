@@ -28,7 +28,7 @@ import json
 import os
 from hashlib import sha256
 
-from harmony.schemas.vector import Vector
+from harmony.schemas.text_vector import TextVector
 
 from harmony_api import constants
 from harmony_api.utils.singleton_meta import SingletonMeta
@@ -43,7 +43,7 @@ class VectorsCache(metaclass=SingletonMeta):
     """
 
     def __init__(self):
-        self.__cache: dict[str, Vector] = {}
+        self.__cache: dict[str, TextVector] = {}
 
         self.__load()
 
@@ -62,14 +62,14 @@ class VectorsCache(metaclass=SingletonMeta):
             cache: dict[str, dict] = {}
 
         # Dict to vectors
-        cache_parsed: dict[str, Vector] = {}
+        cache_parsed: dict[str, TextVector] = {}
         for key, value in cache.items():
-            vector = Vector.parse_obj(value)
+            vector = TextVector.parse_obj(value)
             cache_parsed[key] = vector
 
         self.__cache = cache_parsed
 
-    def set(self, key: str, value: Vector):
+    def set(self, key: str, value: TextVector):
         """
         :param key: The cache key.
         :param value: The cache value.
@@ -79,7 +79,7 @@ class VectorsCache(metaclass=SingletonMeta):
 
         self.__cache[key] = value
 
-    def get(self, key: str) -> Vector:
+    def get(self, key: str) -> TextVector:
         """
         :param key: The cache key.
 
@@ -97,7 +97,7 @@ class VectorsCache(metaclass=SingletonMeta):
 
         return key in self.__cache
 
-    def get_cache(self) -> dict[str, Vector]:
+    def get_cache(self) -> dict[str, TextVector]:
         """
         Get the whole cache from memory.
         """
