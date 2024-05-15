@@ -13,13 +13,14 @@ from harmony_api.constants import GOOGLE_GECKO_003, GOOGLE_GECKO_MULTILINGUAL
 GOOGLE_APPLICATION_CREDENTIALS: dict = json.loads(
     base64.b64decode(os.getenv("GOOGLE_APPLICATION_CREDENTIALS_B64", "e30="))
 )
-credentials = Credentials.from_service_account_info(
-    GOOGLE_APPLICATION_CREDENTIALS,
-    scopes=["https://www.googleapis.com/auth/cloud-platform"],
-)
-vertexai.init(
-    project=GOOGLE_APPLICATION_CREDENTIALS["project_id"], credentials=credentials
-)
+if GOOGLE_APPLICATION_CREDENTIALS:
+    credentials = Credentials.from_service_account_info(
+        GOOGLE_APPLICATION_CREDENTIALS,
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
+    vertexai.init(
+        project=GOOGLE_APPLICATION_CREDENTIALS["project_id"], credentials=credentials
+    )
 
 
 def __get_google_embeddings(texts: list[str], model_name: str) -> np.ndarray:
