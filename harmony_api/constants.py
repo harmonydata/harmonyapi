@@ -31,40 +31,34 @@ VECTORS_CACHE_JSON_FILENAME = "vectors_cache.json"
 HUGGINGFACE_MINILM_L12_V2 = {
     "framework": "huggingface",
     "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-    "available": True,
 }
 
 HUGGINGFACE_MPNET_BASE_V2 = {
     "framework": "huggingface",
     "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
-    "available": True,
 }
 OPENAI_ADA_02 = {
     "framework": "openai",
     "model": "text-embedding-ada-002",
-    "available": True,
 }
 
 OPENAI_3_LARGE = {
     "framework": "openai",
     "model": "text-embedding-3-large",
-    "available": True,
 }
 
 GOOGLE_GECKO_003 = {
     "framework": "google",
     "model": "textembedding-gecko@003",
-    "available": True,
 }
 
 GOOGLE_GECKO_MULTILINGUAL = {
     "framework": "google",
     "model": "textembedding-gecko-multilingual",
-    "available": True,
 }
 
-# All available models
-AVAILABLE_MODELS: list[dict] = [
+# All models
+ALL_MODELS: list[dict] = [
     HUGGINGFACE_MINILM_L12_V2,
     HUGGINGFACE_MPNET_BASE_V2,
     OPENAI_ADA_02,
@@ -72,6 +66,3 @@ AVAILABLE_MODELS: list[dict] = [
     GOOGLE_GECKO_003,
     GOOGLE_GECKO_MULTILINGUAL,
 ]
-
-AVAILABLE_MODELS_NAMES = [x["model"] for x in AVAILABLE_MODELS]
-AVAILABLE_MODELS_FRAMEWORKS = [x["framework"] for x in AVAILABLE_MODELS]

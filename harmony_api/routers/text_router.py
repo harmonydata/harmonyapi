@@ -39,8 +39,7 @@ from harmony.schemas.responses.text import MatchResponse, CacheResponse
 from harmony_api import helpers
 from harmony_api import http_exceptions
 from harmony_api.constants import (
-    AVAILABLE_MODELS_NAMES,
-    AVAILABLE_MODELS_FRAMEWORKS,
+    ALL_MODELS,
     GOOGLE_GECKO_MULTILINGUAL,
     GOOGLE_GECKO_003,
     OPENAI_3_LARGE,
@@ -184,13 +183,13 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Model
     model = match_body.parameters
-    if model.model not in AVAILABLE_MODELS_NAMES:
+    if model.dict() not in ALL_MODELS:
         raise http_exceptions.CouldNotProcessRequestHTTPException(
-            "Could not process request because the model does not exist or is not available."
+            "Could not process request because the model does not exist."
         )
-    if model.framework not in AVAILABLE_MODELS_FRAMEWORKS:
+    if not helpers.check_model_availability(model.dict()):
         raise http_exceptions.CouldNotProcessRequestHTTPException(
-            "Could not process request because the framework does not exist."
+            "Could not process request because the model is not available."
         )
 
     # Assign any missing IDs
@@ -250,7 +249,10 @@ def match(match_body: MatchBody) -> MatchResponse:
     new_text_vectors: dict[str, list[float]] = {}
 
     # Match
-    if model.model == HUGGINGFACE_MINILM_L12_V2["model"]:
+    if (
+        model.framework == HUGGINGFACE_MINILM_L12_V2["framework"]
+        and model.model == HUGGINGFACE_MINILM_L12_V2["model"]
+    ):
         questions, matches, query_similarity, new_text_vectors = (
             match_instruments_with_function(
                 instruments=instruments,
@@ -262,7 +264,10 @@ def match(match_body: MatchBody) -> MatchResponse:
                 vectorisation_function=hugging_face_embeddings.get_hugging_face_embeddings_minilm_l12_v2,
             )
         )
-    elif model.model == HUGGINGFACE_MPNET_BASE_V2["model"]:
+    elif (
+        model.framework == HUGGINGFACE_MPNET_BASE_V2["framework"]
+        and model.model == HUGGINGFACE_MPNET_BASE_V2["model"]
+    ):
         questions, matches, query_similarity, new_text_vectors = (
             match_instruments_with_function(
                 instruments=instruments,
@@ -274,7 +279,10 @@ def match(match_body: MatchBody) -> MatchResponse:
                 vectorisation_function=hugging_face_embeddings.get_hugging_face_embeddings_mpnet_base_v2,
             )
         )
-    elif model.model == OPENAI_ADA_02["model"]:
+    elif (
+        model.framework == OPENAI_ADA_02["framework"]
+        and model.model == OPENAI_ADA_02["model"]
+    ):
         questions, matches, query_similarity, new_text_vectors = (
             match_instruments_with_function(
                 instruments=instruments,
@@ -286,7 +294,10 @@ def match(match_body: MatchBody) -> MatchResponse:
                 vectorisation_function=openai_embeddings.get_openai_embeddings_ada_02,
             )
         )
-    elif model.model == OPENAI_3_LARGE["model"]:
+    elif (
+        model.framework == OPENAI_3_LARGE["framework"]
+        and model.model == OPENAI_3_LARGE["model"]
+    ):
         questions, matches, query_similarity, new_text_vectors = (
             match_instruments_with_function(
                 instruments=instruments,
@@ -298,7 +309,10 @@ def match(match_body: MatchBody) -> MatchResponse:
                 vectorisation_function=openai_embeddings.get_openai_embeddings_3_large,
             )
         )
-    elif model.model == GOOGLE_GECKO_MULTILINGUAL["model"]:
+    elif (
+        model.framework == GOOGLE_GECKO_MULTILINGUAL["framework"]
+        and model.model == GOOGLE_GECKO_MULTILINGUAL["model"]
+    ):
         questions, matches, query_similarity, new_text_vectors = (
             match_instruments_with_function(
                 instruments=instruments,
@@ -310,7 +324,10 @@ def match(match_body: MatchBody) -> MatchResponse:
                 vectorisation_function=google_embeddings.get_google_embeddings_gecko_multilingual,
             )
         )
-    elif model.model == GOOGLE_GECKO_003["model"]:
+    elif (
+        model.framework == GOOGLE_GECKO_003["framework"]
+        and model.model == GOOGLE_GECKO_003["model"]
+    ):
         questions, matches, query_similarity, new_text_vectors = (
             match_instruments_with_function(
                 instruments=instruments,

@@ -29,7 +29,8 @@ from typing import List
 
 import harmony
 from fastapi import APIRouter, status
-from harmony_api.constants import AVAILABLE_MODELS
+from harmony_api.constants import ALL_MODELS
+from harmony_api.helpers import check_model_availability
 
 router = APIRouter(prefix="/info")
 
@@ -54,4 +55,10 @@ def show_models() -> List[dict]:
     Show models.
     """
 
-    return AVAILABLE_MODELS
+    models = []
+    for model in ALL_MODELS:
+        is_available = check_model_availability(model)
+        model_dict = {**model, "available": is_available}
+        models.append(model_dict)
+
+    return models

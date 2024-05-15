@@ -29,6 +29,7 @@ import os
 from typing import List
 
 import numpy as np
+
 from harmony.schemas.requests.text import Instrument, Question
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -40,7 +41,7 @@ def get_example_instruments() -> List[Instrument]:
     example_instruments = []
 
     with open(
-        str(os.getcwd()) + "/example_questionnaires.json", "r", encoding="utf-8"
+            str(os.getcwd()) + "/example_questionnaires.json", "r", encoding="utf-8"
     ) as file:
         for line in file:
             instrument = Instrument.parse_raw(line)
@@ -67,25 +68,44 @@ def get_mhc_embeddings(model_name: str) -> tuple:
         data_path = os.path.join(dir_path, "../mhc_embeddings")  # submodule
 
         with open(
-            os.path.join(data_path, "mhc_questions.txt"), "r", encoding="utf-8"
+                os.path.join(data_path, "mhc_questions.txt"), "r", encoding="utf-8"
         ) as file:
             for line in file:
                 mhc_question = Question(question_text=line)
                 mhc_questions.append(mhc_question)
 
         with open(
-            os.path.join(data_path, "mhc_all_metadatas.json"), "r", encoding="utf-8"
+                os.path.join(data_path, "mhc_all_metadatas.json"), "r", encoding="utf-8"
         ) as file:
             for line in file:
                 mhc_meta = json.loads(line)
                 mhc_all_metadata.append(mhc_meta)
 
         with open(
-            os.path.join(data_path, f"mhc_embeddings_{model_name.replace('/', '-')}.npy"),
-            "rb",
+                os.path.join(data_path, f"mhc_embeddings_{model_name.replace('/', '-')}.npy"),
+                "rb",
         ) as file:
             mhc_embeddings = np.load(file, allow_pickle=True)
     except (Exception,) as e:
         print(f"Could not load MHC embeddings {str(e)}")
 
     return mhc_questions, mhc_all_metadata, mhc_embeddings
+
+
+def check_model_availability(model: dict) -> bool:
+    """
+    Check model availability.
+    """
+
+    # TODO
+
+    if model["framework"] == "huggingface":
+        return True
+
+    if model["framework"] == "openai":
+        return True
+
+    if model["framework"] == "google":
+        return True
+
+    return False
