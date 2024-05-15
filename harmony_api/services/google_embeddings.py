@@ -30,6 +30,9 @@ def __get_google_embeddings(texts: list[str], model_name: str) -> np.ndarray:
     Get Google embeddings.
     """
 
+    if not texts:
+        return np.array([])
+
     model = TextEmbeddingModel.from_pretrained(model_name)
     inputs = [
         TextEmbeddingInput(text=text, task_type="RETRIEVAL_DOCUMENT") for text in texts

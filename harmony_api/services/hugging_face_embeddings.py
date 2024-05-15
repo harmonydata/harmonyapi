@@ -20,6 +20,9 @@ def __get_hugging_face_embeddings(texts: list[str], model_name: str) -> np.ndarr
     Get Hugging Face embeddings.
     """
 
+    if not texts:
+        return np.array([])
+
     embeddings = []
 
     if model_name == HUGGINGFACE_MINILM_L12_V2["model"]:

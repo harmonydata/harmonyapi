@@ -17,6 +17,9 @@ def __get_openai_embeddings(texts: list[str], model_name: str) -> np.ndarray:
     Get OpenAI embeddings.
     """
 
+    if not texts:
+        return np.array([])
+
     res = openai.embeddings.create(
         input=texts,
         model=model_name,
