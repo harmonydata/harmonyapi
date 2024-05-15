@@ -103,9 +103,15 @@ def check_model_availability(model: dict) -> bool:
         return True
 
     if model["framework"] == "openai":
+        if not os.getenv("OPENAI_API_KEY"):
+            return False
+
         return True
 
     if model["framework"] == "google":
+        if not os.getenv("GOOGLE_APPLICATION_CREDENTIALS_B64"):
+            return False
+
         return True
 
     return False
