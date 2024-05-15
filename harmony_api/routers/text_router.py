@@ -39,7 +39,8 @@ from harmony.schemas.responses.text import MatchResponse, CacheResponse
 from harmony_api import helpers
 from harmony_api import http_exceptions
 from harmony_api.constants import (
-    AVAILABLE_MODELS,
+    AVAILABLE_MODELS_NAMES,
+    AVAILABLE_MODELS_FRAMEWORKS,
     GOOGLE_GECKO_MULTILINGUAL,
     GOOGLE_GECKO_003,
     OPENAI_3_LARGE,
@@ -183,9 +184,13 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Model
     model = match_body.parameters
-    if model.dict() not in AVAILABLE_MODELS:
+    if model.model not in AVAILABLE_MODELS_NAMES:
         raise http_exceptions.CouldNotProcessRequestHTTPException(
-            "Could not process request because the model does not exist."
+            "Could not process request because the model does not exist or is not available."
+        )
+    if model.framework not in AVAILABLE_MODELS_FRAMEWORKS:
+        raise http_exceptions.CouldNotProcessRequestHTTPException(
+            "Could not process request because the framework does not exist."
         )
 
     # Assign any missing IDs
