@@ -32,6 +32,12 @@ import numpy as np
 
 from harmony.schemas.requests.text import Instrument, Question
 from harmony_api.core.settings import get_settings
+from harmony_api.services.openai_embeddings import (
+    HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST,
+)
+from harmony_api.services.google_embeddings import (
+    HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST,
+)
 
 settings = get_settings()
 
@@ -102,21 +108,24 @@ def check_model_availability(model: dict) -> bool:
     Check model availability.
     """
 
-    # TODO
-
     if model["framework"] == "huggingface":
-        return True
+        # No checks required, always return True at the end of this function
+        pass
 
-    if model["framework"] == "openai":
+    elif model["framework"] == "openai":
         if not settings.OPENAI_API_KEY:
             return False
 
-        return True
-
-    if model["framework"] == "google":
-        if not settings.GOOGLE_APPLICATION_CREDENTIALS_B64:
+        # Check model
+        if model["model"] not in HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST:
             return False
 
-        return True
+    elif model["framework"] == "google":
+        if not settings.GOOGLE_APPLICATION_CREDENTIALS:
+            return False
 
-    return False
+        # Check model
+        if model["model"] not in HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST:
+            return False
+
+    return True

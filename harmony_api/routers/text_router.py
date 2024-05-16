@@ -39,7 +39,7 @@ from harmony.schemas.responses.text import MatchResponse, CacheResponse
 from harmony_api import helpers
 from harmony_api import http_exceptions
 from harmony_api.constants import (
-    ALL_MODELS,
+    ALL_HARMONY_API_MODELS,
     GOOGLE_GECKO_MULTILINGUAL,
     GOOGLE_GECKO_003,
     OPENAI_3_LARGE,
@@ -183,7 +183,7 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Model
     model = match_body.parameters
-    if model.dict() not in ALL_MODELS:
+    if model.dict() not in ALL_HARMONY_API_MODELS:
         raise http_exceptions.CouldNotProcessRequestHTTPException(
             "Could not process request because the model does not exist."
         )

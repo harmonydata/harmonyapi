@@ -38,19 +38,19 @@ GOOGLE_APPLICATION_CREDENTIALS: dict = json.loads(
 
 class Settings(BaseSettings):
     # General harmony_api config
-    VERSION = "2.0"
-    APP_TITLE = "Harmony API"
-    TIKA_ENDPOINT = os.getenv("TIKA_ENDPOINT", "")
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    GOOGLE_APPLICATION_CREDENTIALS = GOOGLE_APPLICATION_CREDENTIALS
+    VERSION: str = "2.0"
+    APP_TITLE: str = "Harmony API"
+    TIKA_ENDPOINT: str = os.getenv("TIKA_ENDPOINT", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+    GOOGLE_APPLICATION_CREDENTIALS: dict = GOOGLE_APPLICATION_CREDENTIALS
 
 
 class DevSettings(Settings):
-    SERVER_HOST = "0.0.0.0"
-    DEBUG = True
-    PORT = 8000
-    RELOAD = True
-    CORS = {
+    SERVER_HOST: str = "0.0.0.0"
+    DEBUG: bool = True
+    PORT: int = 8000
+    RELOAD: bool = True
+    CORS: dict = {
         "origins": [
             "*",
         ],
@@ -62,11 +62,11 @@ class DevSettings(Settings):
 
 class ProdSettings(Settings):
     # TODO change
-    SERVER_HOST = "0.0.0.0"
-    DEBUG = False
-    PORT = 8000
-    RELOAD = False
-    CORS = {
+    SERVER_HOST: str = "0.0.0.0"
+    DEBUG: bool = False
+    PORT: int = 8000
+    RELOAD: bool = False
+    CORS: dict = {
         "origins": [
             "*",
         ],

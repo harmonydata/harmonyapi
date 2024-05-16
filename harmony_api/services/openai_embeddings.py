@@ -1,14 +1,30 @@
 import numpy as np
 import openai
 
-from harmony_api.constants import OPENAI_3_LARGE, OPENAI_ADA_02
+from harmony_api.constants import (
+    HARMONY_API_OPENAI_MODELS_LIST,
+    OPENAI_3_LARGE,
+    OPENAI_ADA_02,
+)
 from harmony_api.core.settings import get_settings
+from typing import List
 
 settings = get_settings()
 
 # OpenAI API key
 if settings.OPENAI_API_KEY:
     openai.api_key = settings.OPENAI_API_KEY
+
+# Available models
+HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST: List[str] = []
+if settings.OPENAI_API_KEY:
+    openai_client = openai.OpenAI()
+    OPENAI_MODELS: List[str] = [x.id for x in openai_client.models.list()]
+    for harmony_api_openai_model in HARMONY_API_OPENAI_MODELS_LIST:
+        if harmony_api_openai_model["model"] in OPENAI_MODELS:
+            HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST.append(
+                harmony_api_openai_model["model"]
+            )
 
 
 def __get_openai_embeddings(texts: list[str], model_name: str) -> np.ndarray:

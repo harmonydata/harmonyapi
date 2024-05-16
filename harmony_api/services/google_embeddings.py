@@ -1,13 +1,15 @@
-import base64
-import json
-import os
-
 import numpy as np
 import vertexai
+from google.api_core.exceptions import NotFound
 from google.oauth2.service_account import Credentials
 from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel
+from typing import List
 
-from harmony_api.constants import GOOGLE_GECKO_003, GOOGLE_GECKO_MULTILINGUAL
+from harmony_api.constants import (
+    HARMONY_API_GOOGLE_MODELS_LIST,
+    GOOGLE_GECKO_003,
+    GOOGLE_GECKO_MULTILINGUAL,
+)
 from harmony_api.core.settings import get_settings
 
 settings = get_settings()
@@ -22,6 +24,18 @@ if settings.GOOGLE_APPLICATION_CREDENTIALS:
         project=settings.GOOGLE_APPLICATION_CREDENTIALS["project_id"],
         credentials=credentials,
     )
+
+# Available models
+HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST: List[str] = []
+if settings.GOOGLE_APPLICATION_CREDENTIALS:
+    for harmony_api_google_model in HARMONY_API_GOOGLE_MODELS_LIST:
+        try:
+            TextEmbeddingModel.from_pretrained(harmony_api_google_model["model"])
+            HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST.append(
+                harmony_api_google_model["model"]
+            )
+        except NotFound:
+            pass
 
 
 def __get_google_embeddings(texts: list[str], model_name: str) -> np.ndarray:
