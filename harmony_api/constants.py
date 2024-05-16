@@ -37,6 +37,7 @@ HUGGINGFACE_MPNET_BASE_V2 = {
     "framework": "huggingface",
     "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
 }
+
 OPENAI_ADA_02 = {
     "framework": "openai",
     "model": "text-embedding-ada-002",

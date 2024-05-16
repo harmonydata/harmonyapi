@@ -22,13 +22,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
 """
 
 import os
+import base64
+import json
 from typing import Union
 
 from pydantic import BaseSettings
+
+GOOGLE_APPLICATION_CREDENTIALS: dict = json.loads(
+    base64.b64decode(os.getenv("GOOGLE_APPLICATION_CREDENTIALS_B64", "e30="))
+)
 
 
 class Settings(BaseSettings):
@@ -36,6 +41,8 @@ class Settings(BaseSettings):
     VERSION = "2.0"
     APP_TITLE = "Harmony API"
     TIKA_ENDPOINT = os.getenv("TIKA_ENDPOINT", "")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    GOOGLE_APPLICATION_CREDENTIALS = GOOGLE_APPLICATION_CREDENTIALS
 
 
 class DevSettings(Settings):

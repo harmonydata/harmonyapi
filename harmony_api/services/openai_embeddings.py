@@ -1,14 +1,14 @@
-import os
-
 import numpy as np
 import openai
 
 from harmony_api.constants import OPENAI_3_LARGE, OPENAI_ADA_02
+from harmony_api.core.settings import get_settings
+
+settings = get_settings()
 
 # OpenAI API key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if OPENAI_API_KEY:
-    openai.api_key = OPENAI_API_KEY
+if settings.OPENAI_API_KEY:
+    openai.api_key = settings.OPENAI_API_KEY
 
 
 def __get_openai_embeddings(texts: list[str], model_name: str) -> np.ndarray:
