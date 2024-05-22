@@ -216,7 +216,9 @@ def match(match_body: MatchBody) -> MatchResponse:
             # Text
             question_text = question.question_text
             question_text_key = vectors_cache.generate_key(
-                text=question_text, model_name=model.model
+                text=question_text,
+                model_framework=model.framework,
+                model_name=model.model,
             )
             if vectors_cache.has(question_text_key):
                 cached_vector = vectors_cache.get(question_text_key)
@@ -225,7 +227,9 @@ def match(match_body: MatchBody) -> MatchResponse:
             # Negated text
             negated_text = negate(question_text, instrument.language)
             negated_text_key = vectors_cache.generate_key(
-                negated_text, model_name=model.model
+                text=negated_text,
+                model_framework=model.framework,
+                model_name=model.model,
             )
             if vectors_cache.has(negated_text_key):
                 cached_vector = vectors_cache.get(negated_text_key)
@@ -233,7 +237,9 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Get cached vector of query
     if query:
-        query_key = vectors_cache.generate_key(text=query, model_name=model.model)
+        query_key = vectors_cache.generate_key(
+            text=query, model_framework=model.framework, model_name=model.model
+        )
         if vectors_cache.has(query_key):
             cached_vector = vectors_cache.get(query_key)
             cached_text_vectors_dict[query] = cached_vector[query]
@@ -342,7 +348,9 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Add new vectors to cache
     for key, value in new_text_vectors.items():
-        vector_key = vectors_cache.generate_key(text=key, model_name=model.model)
+        vector_key = vectors_cache.generate_key(
+            text=key, model_framework=model.framework, model_name=model.model
+        )
         if not vectors_cache.has(vector_key):
             vectors_cache.set(vector_key, {key: value})
 

@@ -100,6 +100,9 @@ class VectorsCache(metaclass=SingletonMeta):
     def save(self):
         """
         Save cache to disk.
+
+        This is saved as a list of dictionaries containing the key as the hash and the value as a dict with the text
+        as key and the value as the vector.
         """
 
         with open(cache_file_path, "w", encoding="utf8") as file:
@@ -107,11 +110,11 @@ class VectorsCache(metaclass=SingletonMeta):
 
         print(f"INFO:\t  Cache {constants.VECTORS_CACHE_JSON_FILENAME} saved...")
 
-    def generate_key(self, text: str, model_name: str) -> str:
+    def generate_key(self, text: str, model_framework: str, model_name: str) -> str:
         """
         Generate key.
         """
 
-        text_full = f"{model_name}.{text}"
+        text_full = f"{model_framework}.{model_name}.{text}"
 
         return sha256(text_full.encode()).hexdigest()
