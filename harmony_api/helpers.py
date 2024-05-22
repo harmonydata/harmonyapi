@@ -38,6 +38,10 @@ from harmony_api.services.openai_embeddings import (
 from harmony_api.services.google_embeddings import (
     HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST,
 )
+from harmony_api.services.hugging_face_embeddings import (
+    HUGGINGFACE_MPNET_BASE_V2,
+    HUGGINGFACE_MINILM_L12_V2,
+)
 
 settings = get_settings()
 
@@ -68,8 +72,8 @@ def get_mhc_embeddings(model_name: str) -> tuple:
 
     # Only return the MHC embeddings for the Hugging Face models
     if model_name not in [
-        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-        "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+        HUGGINGFACE_MPNET_BASE_V2["model"],
+        HUGGINGFACE_MINILM_L12_V2["model"],
     ]:
         return mhc_questions, mhc_all_metadata, mhc_embeddings
 
