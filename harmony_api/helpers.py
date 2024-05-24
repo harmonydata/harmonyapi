@@ -42,6 +42,9 @@ from harmony_api.services.hugging_face_embeddings import (
     HUGGINGFACE_MPNET_BASE_V2,
     HUGGINGFACE_MINILM_L12_V2,
 )
+from harmony_api.services.azure_openai_embeddings import (
+    HARMONY_API_AVAILABLE_AZURE_OPENAI_MODELS_LIST,
+)
 
 settings = get_settings()
 
@@ -112,10 +115,12 @@ def check_model_availability(model: dict) -> bool:
     Check model availability.
     """
 
+    # Hugging Face
     if model["framework"] == "huggingface":
         # No checks required, always return True at the end of this function
         pass
 
+    # OpenAI
     elif model["framework"] == "openai":
         if not settings.OPENAI_API_KEY:
             return False
@@ -124,6 +129,13 @@ def check_model_availability(model: dict) -> bool:
         if model["model"] not in HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST:
             return False
 
+    # Azure OpenAI
+    elif model["framework"] == "azure_openai":
+        # Check model
+        if model["model"] not in HARMONY_API_AVAILABLE_AZURE_OPENAI_MODELS_LIST:
+            return False
+
+    # Google
     elif model["framework"] == "google":
         if not settings.GOOGLE_APPLICATION_CREDENTIALS:
             return False

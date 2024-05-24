@@ -162,6 +162,8 @@ Tika:
    HARMONY_SENTENCE_TRANSFORMER_PATH: /data/paraphrase-multilingual-MiniLM-L12-v2
    OPENAI_API_KEY:
    GOOGLE_APPLICATION_CREDENTIALS_B64:
+   AZURE_OPENAI_API_KEY:
+   AZURE_OPENAI_ENDPOINT:
    TIKA_SERVER_ENDPOINT: http://tika:9998
 ```
 
@@ -172,6 +174,10 @@ Tika:
 `GOOGLE_APPLICATION_CREDENTIALS_B64` - To make use of Google's `Vertex AI`, fill in this environment variable.
 This is the JSON service account file in base64 format. Make sure to give the service account the required `Vertex AI`
 role.
+
+`AZURE_OPENAI_API_KEY` - The Azure OpenAI API key.
+
+`AZURE_OPENAI_ENDPOINT` - The Azure OpenAI endpoint.
 
 `TIKA_SERVER_ENDPOINT` - This is the endpoint where `Tika` is served from.
 
