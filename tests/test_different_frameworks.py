@@ -178,15 +178,47 @@ class TestDifferentFrameworks(unittest.TestCase):
 
         self.assertLess(0.92, response.json()["matches"][0][2])
 
-
     def test_openai(self):
-        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
-        payload_google["parameters"]["framework"] = "openai"
-        payload_google["parameters"]["model"] = "text-embedding-3-large"
+        payload_openai = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_openai["parameters"]["framework"] = "openai"
+        payload_openai["parameters"]["model"] = "text-embedding-3-large"
 
-        response = requests.post(endpoint, headers=headers, json=payload_google)
+        response = requests.post(endpoint, headers=headers, json=payload_openai)
 
         self.assertLess(0.99, response.json()["matches"][0][0])
+
+    def test_azure_openai(self):
+        payload_openai = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_openai["parameters"]["framework"] = "azure_openai"
+        payload_openai["parameters"]["model"] = "fds-text-embedding-3-large"
+
+        response = requests.post(endpoint, headers=headers, json=payload_openai)
+
+        self.assertLess(0.99, response.json()["matches"][0][0])
+
+    def test_azure_openai_same_as_vanilla_openai(self):
+        payload_vanilla_openai = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_vanilla_openai["parameters"]["framework"] = "openai"
+        payload_vanilla_openai["parameters"]["model"] = "text-embedding-3-large"
+
+        vanilla_openai_response = requests.post(endpoint, headers=headers, json=payload_vanilla_openai)
+
+        payload_azure_openai = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_azure_openai["parameters"]["framework"] = "azure_openai"
+        payload_azure_openai["parameters"]["model"] = "fds-text-embedding-3-large"
+
+        azure_openai_response = requests.post(endpoint, headers=headers, json=payload_azure_openai)
+
+        self.assertGreater(0.01,
+                           abs(vanilla_openai_response.json()["matches"][0][0] -
+                               azure_openai_response.json()["matches"][0][0]))
+        self.assertGreater(0.01,
+                           abs(vanilla_openai_response.json()["matches"][0][1] -
+                               azure_openai_response.json()["matches"][0][1]))
+        self.assertGreater(0.01,
+                           abs(vanilla_openai_response.json()["matches"][0][2] -
+                               azure_openai_response.json()["matches"][0][2]))
+
 
 if __name__ == '__main__':
     unittest.main()
