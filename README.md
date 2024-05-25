@@ -192,6 +192,29 @@ So to run locally with Docker Compose you can do:
 docker compose up
 ```
 
+# Providing environment variables in `.env` file
+
+If you are working with external third-party services in the API, you may find it convenient to make an `.env` file in the base folder of the project. You can connect an IDE such as Pycharm to use this `.env` file. It will be ignored by `.gitignore` so you don't need to worry about accidentally committing your credentials to the repo.
+
+![harmonyenv.png](./docs/harmonyenv.png)
+
+Example content of the `.env` file:
+
+```
+GOOGLE_APPLICATION_CREDENTIALS='{   "type": "service_account",  ... }'
+AZURE_OPENAI_API_KEY=f46axxxxxxxxxxxxxxxxxxxxxxxxxxxd
+AZURE_OPENAI_ENDPOINT=https://xxxxxxxxx.openai.azure.com/
+OPENAI_API_TYPE=azure
+OPENAI_API_VERSION=2023-12-01-preview
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxX
+```
+
+When deploying, you can use these environment variables in your Docker run command, e.g.
+
+```
+docker run -d -p 80:80 -p 3000:3000 -e GOOGLE_APPLICATION_CREDENTIALS=xxx -e AZURE_OPENAI_API_KEY=xxxx -e "HARMONY_DATA_PATH=/data" -v /home/thomaswood/data:/data harmonydata/harmonyapi:[DOCKER_TAG_HERE]
+```
+
 # Harmony FastAPI API implementation
 
 If you are not running with Docker, you can run the individual components of the Harmony API separately.
