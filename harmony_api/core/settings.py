@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     APP_TITLE: str = "Harmony API"
     TIKA_ENDPOINT: str = os.getenv("TIKA_ENDPOINT", "")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
     GOOGLE_APPLICATION_CREDENTIALS: dict = GOOGLE_APPLICATION_CREDENTIALS
 
 

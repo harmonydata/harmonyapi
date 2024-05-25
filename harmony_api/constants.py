@@ -27,35 +27,47 @@ SOFTWARE.
 INSTRUMENTS_CACHE_JSON_FILENAME = "instruments_cache.json"
 VECTORS_CACHE_JSON_FILENAME = "vectors_cache.json"
 
-# Models
+# Hugging Face models
 HUGGINGFACE_MINILM_L12_V2 = {
     "framework": "huggingface",
     "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
 }
-
 HUGGINGFACE_MPNET_BASE_V2 = {
     "framework": "huggingface",
     "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
 }
 
+
+# OpenAI models
 OPENAI_ADA_02 = {
     "framework": "openai",
     "model": "text-embedding-ada-002",
 }
-
 OPENAI_3_LARGE = {
     "framework": "openai",
     "model": "text-embedding-3-large",
 }
 
+
+# Google models
 GOOGLE_GECKO_003 = {
     "framework": "google",
     "model": "textembedding-gecko@003",
 }
-
 GOOGLE_GECKO_MULTILINGUAL = {
     "framework": "google",
     "model": "textembedding-gecko-multilingual",
+}
+
+
+# Azure OpenAI models
+AZURE_OPENAI_3_LARGE = {
+    "framework": "azure_openai",
+    "model": "fds-text-embedding-3-large",
+}
+AZURE_OPENAI_ADA_02 = {
+    "framework": "azure_openai",
+    "model": "fds-text-embedding-ada-002",
 }
 
 # All models
@@ -66,11 +78,15 @@ ALL_HARMONY_API_MODELS: list[dict] = [
     OPENAI_3_LARGE,
     GOOGLE_GECKO_003,
     GOOGLE_GECKO_MULTILINGUAL,
+    AZURE_OPENAI_3_LARGE,
+    AZURE_OPENAI_ADA_02,
 ]
 
 HARMONY_API_HUGGING_FACE_MODELS_LIST = [
     HUGGINGFACE_MINILM_L12_V2,
     HUGGINGFACE_MPNET_BASE_V2,
 ]
+
 HARMONY_API_GOOGLE_MODELS_LIST = [GOOGLE_GECKO_003, GOOGLE_GECKO_MULTILINGUAL]
 HARMONY_API_OPENAI_MODELS_LIST = [OPENAI_3_LARGE, OPENAI_ADA_02]
+HARMONY_API_AZURE_OPENAI_MODELS_LIST = [AZURE_OPENAI_ADA_02, AZURE_OPENAI_3_LARGE]

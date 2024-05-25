@@ -46,10 +46,13 @@ from harmony_api.constants import (
     OPENAI_ADA_02,
     HUGGINGFACE_MPNET_BASE_V2,
     HUGGINGFACE_MINILM_L12_V2,
+    AZURE_OPENAI_ADA_02,
+    AZURE_OPENAI_3_LARGE,
 )
 from harmony_api.services import google_embeddings
 from harmony_api.services import hugging_face_embeddings
 from harmony_api.services import openai_embeddings
+from harmony_api.services import azure_openai_embeddings
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
 
@@ -313,6 +316,36 @@ def match(match_body: MatchBody) -> MatchResponse:
                 mhc_embeddings=mhc_embeddings,
                 texts_cached_vectors=cached_text_vectors_dict,
                 vectorisation_function=openai_embeddings.get_openai_embeddings_3_large,
+            )
+        )
+    elif (
+        model.framework == AZURE_OPENAI_3_LARGE["framework"]
+        and model.model == AZURE_OPENAI_3_LARGE["model"]
+    ):
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=azure_openai_embeddings.get_azure_openai_embeddings_3_large,
+            )
+        )
+    elif (
+        model.framework == AZURE_OPENAI_ADA_02["framework"]
+        and model.model == AZURE_OPENAI_ADA_02["model"]
+    ):
+        questions, matches, query_similarity, new_text_vectors = (
+            match_instruments_with_function(
+                instruments=instruments,
+                query=query,
+                mhc_questions=mhc_questions,
+                mhc_all_metadatas=mhc_all_metadata,
+                mhc_embeddings=mhc_embeddings,
+                texts_cached_vectors=cached_text_vectors_dict,
+                vectorisation_function=azure_openai_embeddings.get_azure_openai_embeddings_ada_02,
             )
         )
     elif (

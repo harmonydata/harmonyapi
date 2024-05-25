@@ -25,7 +25,7 @@ if settings.GOOGLE_APPLICATION_CREDENTIALS:
         credentials=credentials,
     )
 
-# Available models
+# Check available models
 HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST: List[str] = []
 if settings.GOOGLE_APPLICATION_CREDENTIALS:
     for harmony_api_google_model in HARMONY_API_GOOGLE_MODELS_LIST:
