@@ -25,15 +25,14 @@ SOFTWARE.
 """
 
 import os
-import base64
 import json
 from typing import Union
 
 from pydantic import BaseSettings
 
-GOOGLE_APPLICATION_CREDENTIALS: dict = json.loads(
-    base64.b64decode(os.getenv("GOOGLE_APPLICATION_CREDENTIALS_B64", "e30="))
-)
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", {})
+if GOOGLE_APPLICATION_CREDENTIALS:
+    GOOGLE_APPLICATION_CREDENTIALS = json.loads(GOOGLE_APPLICATION_CREDENTIALS)
 
 
 class Settings(BaseSettings):
