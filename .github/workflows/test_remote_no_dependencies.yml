@@ -1,5 +1,5 @@
 name: "Test remote API"
-description: "Test remote API at https://api.harmonydata.ac.uk. Github actions does not host a running API so we cannot test locally."
+# Test remote API at https://api.harmonydata.ac.uk. Github actions does not host a running API so we cannot test locally.
 
 on:
   push:
