@@ -1,5 +1,6 @@
 import numpy as np
 import openai
+from openai import OpenAI
 
 from harmony_api.constants import (
     HARMONY_API_OPENAI_MODELS_LIST,
@@ -18,7 +19,7 @@ if settings.OPENAI_API_KEY:
 # Check available models
 HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST: List[str] = []
 if settings.OPENAI_API_KEY:
-    openai_client = openai.OpenAI()
+    openai_client = OpenAI()
     OPENAI_MODELS: List[str] = [x.id for x in openai_client.models.list()]
     for harmony_api_openai_model in HARMONY_API_OPENAI_MODELS_LIST:
         if harmony_api_openai_model["model"] in OPENAI_MODELS:
@@ -38,7 +39,9 @@ def __get_openai_embeddings(texts: list[str], model_name: str) -> np.ndarray:
     if not texts:
         return np.array([])
 
-    res = openai.embeddings.create(
+    client = OpenAI()
+
+    res = client.embeddings.create(
         input=texts,
         model=model_name,
     )
