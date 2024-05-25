@@ -25,6 +25,7 @@ SOFTWARE.
 
 '''
 
+import json
 import unittest
 
 import requests
@@ -117,33 +118,75 @@ json_data_to_match_gad_7 = {
 
 endpoint = 'http://localhost:8000/text/match'
 
-response = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_7)
 
+class TestDifferentFrameworks(unittest.TestCase):
 
-class TestMatch(unittest.TestCase):
+    def test_huggingface(self):
+        response = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_7)
 
-    def test_gad_7_correct_size_dictionary_response(self):
-        self.assertEqual(3, len(response.json()))
+        print(response.json()["matches"][0][0])
 
-    def test_gad_7_first_question_conserved(self):
-        self.assertEqual("Feeling nervous, anxious, or on edge", response.json()["questions"][0]["question_text"])
-
-    def test_gad_7_correct_number_of_questions(self):
-        self.assertEqual(4, len(response.json()["questions"]))
-
-    def test_gad_7_correct_number_of_query_similarities(self):
-        self.assertEqual(4, len(response.json()["query_similarity"]))
-
-    def test_gad_7_correct_number_of_matches(self):
-        self.assertEqual(4, len(response.json()["matches"]))
-        self.assertEqual(4, len(response.json()["matches"][0]))
-
-    def test_gad_7_high_like_for_like_match(self):
         self.assertLess(0.99, response.json()["matches"][0][0])
 
-    def test_gad_7__en_vs_pt_high_like_for_like_match(self):
-        self.assertLess(0.90, response.json()["matches"][0][2])
+    def test_google_nonexistent(self):
+        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_google["parameters"]["framework"] = "google"
 
+        response = requests.post(endpoint, headers=headers, json=payload_google)
+
+        self.assertIn("model does not exist", response.text)
+
+    def test_google_real(self):
+        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_google["parameters"]["framework"] = "google"
+        payload_google["parameters"]["model"] = "textembedding-gecko@003"
+
+        response = requests.post(endpoint, headers=headers, json=payload_google)
+
+        self.assertLess(0.99, response.json()["matches"][0][0])
+
+    def test_google_different_from_huggingface(self):
+        response_huggingface = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_7)
+
+        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_google["parameters"]["framework"] = "google"
+        payload_google["parameters"]["model"] = "textembedding-gecko@003"
+
+        response_google = requests.post(endpoint, headers=headers, json=payload_google)
+
+        abs_diff = abs(response_huggingface.json()["matches"][0][1] - response_google.json()["matches"][0][1])
+
+        print("Absolute difference", abs_diff)
+
+        self.assertLess(0.1, abs_diff)
+
+    def test_google_monolingual(self):
+        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_google["parameters"]["framework"] = "google"
+        payload_google["parameters"]["model"] = "textembedding-gecko@003"
+
+        response = requests.post(endpoint, headers=headers, json=payload_google)
+
+        self.assertGreater(0.92, response.json()["matches"][0][2])
+
+    def test_google_multilingual(self):
+        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_google["parameters"]["framework"] = "google"
+        payload_google["parameters"]["model"] = "textembedding-gecko-multilingual"
+
+        response = requests.post(endpoint, headers=headers, json=payload_google)
+
+        self.assertLess(0.92, response.json()["matches"][0][2])
+
+
+    def test_openai(self):
+        payload_google = json.loads(json.dumps(json_data_to_match_gad_7))
+        payload_google["parameters"]["framework"] = "openai"
+        payload_google["parameters"]["model"] = "text-embedding-3-large"
+
+        response = requests.post(endpoint, headers=headers, json=payload_google)
+
+        self.assertLess(0.99, response.json()["matches"][0][0])
 
 if __name__ == '__main__':
     unittest.main()
