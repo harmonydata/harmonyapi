@@ -8,9 +8,10 @@ lxml==4.9.2
 langdetect==1.0.9
 XlsxWriter==3.0.9
 openpyxl==3.1.2
-sentence-transformers==2.2.2
-spacy==3.5.3
+sentence-transformers==2.6.1
 wget==3.2
 rocketry==2.5.1
 openai==1.30.2
 vertexai==1.49.0
+scikit-learn==1.4.1.post1
+xgboost
