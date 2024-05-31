@@ -89,6 +89,16 @@ git clone --recurse-submodules git@github.com:harmonydata/harmonyapi.git
 
 The Harmony API includes the `harmony` repo as a submodule.
 
+## Troubleshooting the submodules after git clone
+
+After you have cloned the repository, if the folder inside called `harmony` is empty, or at any point you get an error like the below, please check you have cloned with `--recurse-submodules` as below:
+
+![./images/error_no_submodules.png](./images/error_no_submodules.png)
+
+```
+git clone --recurse-submodules https://github.com/harmonydata/harmonyapi.git
+```
+
 ## 1. Run Tika
 
 Download and install Java if you don't have it already. Download and install Apache Tika and run it on your
