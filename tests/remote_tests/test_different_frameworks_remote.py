@@ -178,6 +178,8 @@ class TestDifferentFrameworks(unittest.TestCase):
 
         self.assertLess(0.92, response.json()["matches"][0][2])
 
+    # Disabled the vanilla OpenAI as we do not have credentials for this on the live server.
+    '''
     def test_openai(self):
         payload_openai = json.loads(json.dumps(json_data_to_match_gad_7))
         payload_openai["parameters"]["framework"] = "openai"
@@ -186,6 +188,7 @@ class TestDifferentFrameworks(unittest.TestCase):
         response = requests.post(endpoint, headers=headers, json=payload_openai)
 
         self.assertLess(0.99, response.json()["matches"][0][0])
+    '''
 
     def test_azure_openai(self):
         payload_openai = json.loads(json.dumps(json_data_to_match_gad_7))
@@ -196,6 +199,7 @@ class TestDifferentFrameworks(unittest.TestCase):
 
         self.assertLess(0.99, response.json()["matches"][0][0])
 
+    '''
     def test_azure_openai_same_as_vanilla_openai(self):
         payload_vanilla_openai = json.loads(json.dumps(json_data_to_match_gad_7))
         payload_vanilla_openai["parameters"]["framework"] = "openai"
@@ -218,7 +222,7 @@ class TestDifferentFrameworks(unittest.TestCase):
         self.assertGreater(0.01,
                            abs(vanilla_openai_response.json()["matches"][0][2] -
                                azure_openai_response.json()["matches"][0][2]))
-
+    '''
 
 if __name__ == '__main__':
     unittest.main()
