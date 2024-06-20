@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     # General harmony_api config
     VERSION: str = "2.0"
     APP_TITLE: str = "Harmony API"
-    TIKA_ENDPOINT: str = os.getenv("TIKA_ENDPOINT", "")
+    TIKA_SERVER_ENDPOINT: str = os.getenv("TIKA_SERVER_ENDPOINT", "http://tika:9998")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
     AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
     AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")

@@ -24,31 +24,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import bz2
 import json
 import os
-from typing import List
+import pickle as pkl
+import uuid
+from typing import List, Callable
 
 import numpy as np
 
+from harmony.matching.negator import negate
 from harmony.schemas.requests.text import Instrument, Question
+from harmony_api.constants import (
+    GOOGLE_GECKO_MULTILINGUAL,
+    GOOGLE_GECKO_003,
+    OPENAI_3_LARGE,
+    OPENAI_ADA_02,
+    HUGGINGFACE_MPNET_BASE_V2,
+    HUGGINGFACE_MINILM_L12_V2,
+    AZURE_OPENAI_ADA_02,
+    AZURE_OPENAI_3_LARGE,
+)
 from harmony_api.core.settings import get_settings
-from harmony_api.services.openai_embeddings import (
-    HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST,
+from harmony_api.services import azure_openai_embeddings
+from harmony_api.services import google_embeddings
+from harmony_api.services import hugging_face_embeddings
+from harmony_api.services import openai_embeddings
+from harmony_api.services.azure_openai_embeddings import (
+    HARMONY_API_AVAILABLE_AZURE_OPENAI_MODELS_LIST,
 )
 from harmony_api.services.google_embeddings import (
     HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST,
 )
-from harmony_api.services.hugging_face_embeddings import (
-    HUGGINGFACE_MPNET_BASE_V2,
-    HUGGINGFACE_MINILM_L12_V2,
+from harmony_api.services.openai_embeddings import (
+    HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST,
 )
-from harmony_api.services.azure_openai_embeddings import (
-    HARMONY_API_AVAILABLE_AZURE_OPENAI_MODELS_LIST,
-)
+from harmony_api.services.vectors_cache import VectorsCache
 
 settings = get_settings()
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+# Cache
+vectors_cache = VectorsCache()
 
 
 def get_example_instruments() -> List[Instrument]:
@@ -67,7 +85,9 @@ def get_example_instruments() -> List[Instrument]:
 
 
 def get_mhc_embeddings(model_name: str) -> tuple:
-    """Get mhc embeddings"""
+    """
+    Get mhc embeddings.
+    """
 
     mhc_questions = []
     mhc_all_metadata = []
@@ -110,6 +130,47 @@ def get_mhc_embeddings(model_name: str) -> tuple:
     return mhc_questions, mhc_all_metadata, mhc_embeddings
 
 
+def get_catalogue_data(model_name: str) -> dict:
+    """
+    Get catalogue data.
+    """
+
+    # Hugging Face
+    if model_name in [
+        HUGGINGFACE_MPNET_BASE_V2["model"],
+        HUGGINGFACE_MINILM_L12_V2["model"],
+    ]:
+        with bz2.open(f"catalogue_data/embeddings_all_float16.pkl.bz2", "rb") as f:
+            all_embeddings_concatenated = pkl.load(f)
+
+        with open(
+            "catalogue_data/all_questions_ever_seen.json", "r", encoding="utf-8"
+        ) as f:
+            all_questions = json.loads(f.read())
+
+        with open(
+            "catalogue_data/instrument_idx_to_question_idxs.json", "r", encoding="utf-8"
+        ) as f:
+            instrument_idx_to_question_idx = json.loads(f.read())
+
+        all_instruments = []
+        with open(
+            "catalogue_data/all_instruments_preprocessed.json", "r", encoding="utf-8"
+        ) as f:
+            for instrument_idx, l in enumerate(f):
+                instrument = json.loads(l)
+                all_instruments.append(instrument)
+
+        return {
+            "all_embeddings_concatenated": all_embeddings_concatenated,
+            "all_questions": all_questions,
+            "all_instruments": all_instruments,
+            "instrument_idx_to_question_idx": instrument_idx_to_question_idx,
+        }
+
+    return {}
+
+
 def check_model_availability(model: dict) -> bool:
     """
     Check model availability.
@@ -145,3 +206,131 @@ def check_model_availability(model: dict) -> bool:
             return False
 
     return True
+
+
+def get_cached_text_vectors(
+    instruments: List[Instrument], model: dict, query: str | None = None
+) -> dict[str, List[float]]:
+    """
+    Get cached text vectors.
+
+    :param instruments: The instruments.
+    :param query: The query.
+    :param model: The model.
+    """
+
+    cached_text_vectors_dict: dict[str, List[float]] = {}
+    for instrument in instruments:
+        for question in instrument.questions:
+            # Text
+            question_text = question.question_text
+            question_text_key = vectors_cache.generate_key(
+                text=question_text,
+                model_framework=model["framework"],
+                model_name=model["model"],
+            )
+            if vectors_cache.has(question_text_key):
+                cached_vector = vectors_cache.get(question_text_key)
+                cached_text_vectors_dict[question_text] = cached_vector[question_text]
+
+            # Negated text
+            negated_text = negate(question_text, instrument.language)
+            negated_text_key = vectors_cache.generate_key(
+                text=negated_text,
+                model_framework=model["framework"],
+                model_name=model["model"],
+            )
+            if vectors_cache.has(negated_text_key):
+                cached_vector = vectors_cache.get(negated_text_key)
+                cached_text_vectors_dict[negated_text] = cached_vector[negated_text]
+
+    # Get cached vector of query
+    if query:
+        query_key = vectors_cache.generate_key(
+            text=query, model_framework=model["framework"], model_name=model["model"]
+        )
+        if vectors_cache.has(query_key):
+            cached_vector = vectors_cache.get(query_key)
+            cached_text_vectors_dict[query] = cached_vector[query]
+
+    return cached_text_vectors_dict
+
+
+def get_vectorisation_function_for_model(model: dict) -> Callable | None:
+    """
+    Get vectorisation function for model.
+
+    :param model: The model.
+    """
+
+    vectorisation_function: Callable | None = None
+
+    if (
+        model["framework"] == HUGGINGFACE_MINILM_L12_V2["framework"]
+        and model["model"] == HUGGINGFACE_MINILM_L12_V2["model"]
+    ):
+        vectorisation_function = (
+            hugging_face_embeddings.get_hugging_face_embeddings_minilm_l12_v2
+        )
+
+    elif (
+        model["framework"] == HUGGINGFACE_MPNET_BASE_V2["framework"]
+        and model["model"] == HUGGINGFACE_MPNET_BASE_V2["model"]
+    ):
+        vectorisation_function = (
+            hugging_face_embeddings.get_hugging_face_embeddings_mpnet_base_v2
+        )
+
+    elif (
+        model["framework"] == OPENAI_ADA_02["framework"]
+        and model["model"] == OPENAI_ADA_02["model"]
+    ):
+        vectorisation_function = openai_embeddings.get_openai_embeddings_ada_02
+    elif (
+        model["framework"] == OPENAI_3_LARGE["framework"]
+        and model["model"] == OPENAI_3_LARGE["model"]
+    ):
+        vectorisation_function = openai_embeddings.get_openai_embeddings_3_large
+    elif (
+        model["framework"] == AZURE_OPENAI_3_LARGE["framework"]
+        and model["model"] == AZURE_OPENAI_3_LARGE["model"]
+    ):
+        vectorisation_function = (
+            azure_openai_embeddings.get_azure_openai_embeddings_3_large
+        )
+    elif (
+        model["framework"] == AZURE_OPENAI_ADA_02["framework"]
+        and model["model"] == AZURE_OPENAI_ADA_02["model"]
+    ):
+        vectorisation_function = (
+            azure_openai_embeddings.get_azure_openai_embeddings_ada_02
+        )
+    elif (
+        model["framework"] == GOOGLE_GECKO_MULTILINGUAL["framework"]
+        and model["model"] == GOOGLE_GECKO_MULTILINGUAL["model"]
+    ):
+        vectorisation_function = (
+            google_embeddings.get_google_embeddings_gecko_multilingual
+        )
+    elif (
+        model["framework"] == GOOGLE_GECKO_003["framework"]
+        and model["model"] == GOOGLE_GECKO_003["model"]
+    ):
+        vectorisation_function = google_embeddings.get_google_embeddings_gecko_003
+
+    return vectorisation_function
+
+
+def assign_missing_ids_to_instruments(instruments: List[Instrument]) -> List[Instrument]:
+    """
+    Assign missing IDs to instruments.
+    """
+
+    # Assign any missing IDs to instruments
+    for instrument in instruments:
+        if instrument.file_id is None:
+            instrument.file_id = uuid.uuid4().hex
+        if instrument.instrument_id is None:
+            instrument.instrument_id = uuid.uuid4().hex
+
+    return instruments
