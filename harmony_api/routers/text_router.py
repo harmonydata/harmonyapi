@@ -310,12 +310,20 @@ def match_catalogue(
         )
 
     # Match
-    instruments, closest_catalogue_instrument_matches = match_instruments_with_catalogue_instruments(
+    instruments, closest_catalogue_instrument_matches, new_text_vectors = match_instruments_with_catalogue_instruments(
         instruments=instruments,
         catalogue_data=catalogue_data,
         vectorisation_function=vectorisation_function,
         texts_cached_vectors=texts_cached_vectors,
     )
+
+    # Add new vectors to cache
+    for key, value in new_text_vectors.items():
+        vector_key = vectors_cache.generate_key(
+            text=key, model_framework=model.framework, model_name=model.model
+        )
+        if not vectors_cache.has(vector_key):
+            vectors_cache.set(vector_key, {key: value})
 
     response = MatchCatalogueResponse(
         instruments=instruments,
