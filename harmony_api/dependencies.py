@@ -26,17 +26,17 @@ def model_from_match_catalogue_body_is_available(
     return True
 
 
-def model_from_match_catalogue_body_is_hugging_face(
+def model_from_match_catalogue_body_is_minilm_l12_v2(
     match_catalogue_body: MatchCatalogueBody,
 ) -> bool:
     """
-    Check if model is Hugging Face.
+    Check if model is HUGGINGFACE MINILM_L12_V2.
     """
 
     model = match_catalogue_body.parameters
     model_dict = model.dict()
 
-    if model_dict not in constants.HARMONY_API_HUGGING_FACE_MODELS_LIST:
+    if model_dict["model"] != constants.HUGGINGFACE_MINILM_L12_V2["model"]:
         raise http_exceptions.CouldNotProcessRequestHTTPException(
             "Could not process request because the provided model is not supported."
         )

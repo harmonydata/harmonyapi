@@ -16,6 +16,7 @@ services:
        AZURE_OPENAI_API_KEY:
        AZURE_OPENAI_ENDPOINT:
        TIKA_SERVER_ENDPOINT: http://tika:9998
+       AZURE_STORAGE_CONNECTION_STRING:
      volumes:
         - harmonyapimount:/data
 

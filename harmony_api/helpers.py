@@ -24,16 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import re
 import bz2
 import json
 import os
 import pickle as pkl
+import re
 import uuid
-from typing import List, Callable
 from collections import OrderedDict
+from typing import List, Callable
+from io import BytesIO
 
 import numpy as np
+from azure.storage.blob import ContainerClient, StorageStreamDownloader
 
 from harmony.matching.negator import negate
 from harmony.schemas.requests.text import Instrument, Question
@@ -132,42 +134,66 @@ def get_mhc_embeddings(model_name: str) -> tuple:
     return mhc_questions, mhc_all_metadata, mhc_embeddings
 
 
-def get_catalogue_data(framework: str) -> dict:
+def download_catalogue_embeddings(model: dict) -> np.ndarray:
     """
-    Get catalogue data.
+    Download catalogue embeddings for model.
+
+    :param model: The model to download catalogue embeddings for.
     """
 
-    # Hugging Face
-    if framework == "huggingface":
-        with bz2.open(f"catalogue_data/embeddings_all_float16.pkl.bz2", "rb") as f:
-            all_embeddings_concatenated = pkl.load(f)
+    # Currently only "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" is supported
+    if model["model"] != HUGGINGFACE_MINILM_L12_V2["model"]:
+        return np.ndarray([])
 
-        with open(
-            "catalogue_data/all_questions_ever_seen.json", "r", encoding="utf-8"
-        ) as f:
-            all_questions = json.loads(f.read())
+    embeddings_filename = create_etl_embeddings_filename_for_model(model)
 
-        with open(
-            "catalogue_data/instrument_idx_to_question_idxs.json", "r", encoding="utf-8"
-        ) as f:
-            instrument_idx_to_question_idx = json.loads(f.read())
+    # Embeddings
+    embeddings_all_float16_blob = download_blob(
+        blob_name=f"catalogue_data/{embeddings_filename}", container_name="$web"
+    )
+    with bz2.open(BytesIO(embeddings_all_float16_blob.readall()), "rb") as f:
+        all_embeddings_concatenated = pkl.load(f)
 
-        all_instruments = []
-        with open(
-            "catalogue_data/all_instruments_preprocessed.json", "r", encoding="utf-8"
-        ) as f:
-            for instrument_idx, l in enumerate(f):
-                instrument = json.loads(l)
-                all_instruments.append(instrument)
+    return all_embeddings_concatenated
 
-        return {
-            "all_embeddings_concatenated": all_embeddings_concatenated,
-            "all_questions": all_questions,
-            "all_instruments": all_instruments,
-            "instrument_idx_to_question_idx": instrument_idx_to_question_idx,
-        }
 
-    return {}
+def download_catalogue_default_data() -> dict:
+    """
+    Download catalogue default data.
+    """
+
+    # All questions
+    all_questions_blob = download_blob(
+        blob_name="catalogue_data/all_questions_ever_seen.json", container_name="$web"
+    )
+    all_questions = json.loads(all_questions_blob.readall().decode("utf-8"))
+
+    # Instrument index to question indexes
+    instrument_idx_to_question_idxs_blob = download_blob(
+        blob_name="catalogue_data/instrument_idx_to_question_idxs.json",
+        container_name="$web",
+    )
+    instrument_idx_to_question_idx = json.loads(
+        instrument_idx_to_question_idxs_blob.readall().decode("utf-8")
+    )
+
+    # All instruments
+    all_instruments = []
+    all_instruments_preprocessed_blob = download_blob(
+        blob_name="catalogue_data/all_instruments_preprocessed.json",
+        container_name="$web",
+    )
+    for line in (
+        all_instruments_preprocessed_blob.readall().decode("utf-8").splitlines()
+    ):
+        instrument = json.loads(line)
+        all_instruments.append(instrument)
+
+    return {
+        "all_questions": all_questions,
+        "all_instruments": all_instruments,
+        "instrument_idx_to_question_idx": instrument_idx_to_question_idx,
+    }
 
 
 def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
@@ -205,7 +231,10 @@ def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
     for instrument_idx, catalogue_instrument in enumerate(
         catalogue_data["all_instruments"]
     ):
-        if catalogue_instrument["metadata"]["source"].strip().lower() not in sources_set:
+        if (
+            catalogue_instrument["metadata"]["source"].strip().lower()
+            not in sources_set
+        ):
             idxs_instruments_to_remove.append(instrument_idx)
 
     # Remove instruments
@@ -244,7 +273,8 @@ def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
             [normalize_text(x["question_text"]) for x in instrument["questions"]]
         )
         idxs_questions = [
-            updated_question_normalized_to_vector[x]["index"] for x in questions_normalized
+            updated_question_normalized_to_vector[x]["index"]
+            for x in questions_normalized
         ]
         catalogue_data["instrument_idx_to_question_idx"].append(idxs_questions)
 
@@ -416,3 +446,30 @@ def assign_missing_ids_to_instruments(
             instrument.instrument_id = uuid.uuid4().hex
 
     return instruments
+
+
+def download_blob(
+    blob_name: str, container_name: str
+) -> StorageStreamDownloader[bytes]:
+    """
+    Download blob.
+
+    :param blob_name: The blob name.
+    :param container_name: The container name.
+    """
+
+    container_client = ContainerClient.from_connection_string(
+        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
+        container_name=container_name,
+    )
+
+    return container_client.download_blob(blob=blob_name)
+
+
+def create_etl_embeddings_filename_for_model(model: dict) -> str:
+    filename = f"{model['framework']}_{model['model']}"
+    filename = filename.replace("-", "_")
+    filename = filename.replace("/", "_")
+    filename = f"{filename}_embeddings_all_float16.pkl.bz2"
+
+    return filename

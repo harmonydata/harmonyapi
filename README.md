@@ -175,6 +175,7 @@ Tika:
    AZURE_OPENAI_API_KEY:
    AZURE_OPENAI_ENDPOINT:
    TIKA_SERVER_ENDPOINT: http://tika:9998
+   AZURE_STORAGE_CONNECTION_STRING:
 ```
 
 `HARMONY_DATA_PATH` - This path will be used to store for example the cache files. Defaults to the `HOME DIRECTORY`.
@@ -189,6 +190,9 @@ This is the JSON service account file. Make sure to give the service account the
 `AZURE_OPENAI_ENDPOINT` - The Azure OpenAI endpoint.
 
 `TIKA_SERVER_ENDPOINT` - This is the endpoint where `Tika` is served from.
+
+`AZURE_STORAGE_CONNECTION_STRING` - The Azure Blob storage connection string. This is required for downloading the
+catalogue data.
 
 You can ideally set these environment variables to show Harmony where to look for dependencies and data, but it will
 work without it (it will download the sentence transformer from HuggingFace Hub, etc).

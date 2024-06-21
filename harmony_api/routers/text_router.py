@@ -25,6 +25,7 @@ SOFTWARE.
 """
 
 import uuid
+import copy
 from typing import Annotated
 from typing import List
 
@@ -56,10 +57,16 @@ instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
 
 # Catalogue data
-catalogue_data_for_model_framework_dict = {}
+print("INFO:\t  Downloading catalogue data...")
+catalogue_default_data = helpers.download_catalogue_default_data()
+catalogue_embeddings_for_model_dict = {}
 for harmony_api_model in constants.ALL_HARMONY_API_MODELS:
-    catalogue_data_for_model_framework = helpers.get_catalogue_data(harmony_api_model["framework"])
-    catalogue_data_for_model_framework_dict[harmony_api_model["framework"]] = catalogue_data_for_model_framework
+    catalogue_embeddings_for_model = helpers.download_catalogue_embeddings(
+        harmony_api_model
+    )
+    catalogue_embeddings_for_model_dict[harmony_api_model["model"]] = (
+        catalogue_embeddings_for_model
+    )
 
 
 @router.post(path="/parse")
@@ -277,8 +284,8 @@ def match_catalogue(
     _model_is_available=Depends(
         dependencies.model_from_match_catalogue_body_is_available
     ),
-    _model_is_hugging_face=Depends(
-        dependencies.model_from_match_catalogue_body_is_hugging_face
+    _model_is_minilm_l12_v2=Depends(
+        dependencies.model_from_match_catalogue_body_is_minilm_l12_v2
     ),
 ) -> MatchCatalogueResponse:
     """
@@ -311,9 +318,16 @@ def match_catalogue(
         )
 
     # Catalogue data
-    catalogue_data = catalogue_data_for_model_framework_dict[model_dict["framework"]]
+    catalogue_embeddings = catalogue_embeddings_for_model_dict[model_dict["model"]]
+    catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
+    catalogue_data.update(catalogue_default_data)
+
+    # Filter catalogue data for sources
     if sources:
-        catalogue_data = helpers.filter_catalogue_data(catalogue_data=catalogue_data, sources=sources)
+        catalogue_data = helpers.filter_catalogue_data(
+            catalogue_data=copy.deepcopy(catalogue_data),
+            sources=sources
+        )
 
     # Match
     instruments, closest_catalogue_instrument_matches, new_text_vectors = match_instruments_with_catalogue_instruments(
