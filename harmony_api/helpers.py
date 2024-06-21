@@ -24,12 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 import bz2
 import json
 import os
 import pickle as pkl
 import uuid
 from typing import List, Callable
+from collections import OrderedDict
 
 import numpy as np
 
@@ -169,6 +171,83 @@ def get_catalogue_data(model_name: str) -> dict:
         }
 
     return {}
+
+
+def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
+    """
+    Filter catalogue data to only keep instruments with the sources.
+
+    :param catalogue_data: Catalogue data.
+    :param sources: Only keep instruments from sources.
+    """
+
+    def normalize_text(text: str):
+        text = re.sub(r"(?i)\b(?:the|a)\b", "", text).lower()
+        text = re.sub(r"[^a-z0-9]", "", text.lower().strip())
+
+        return text
+
+    # Lowercase sources
+    sources_set = {x.lower().strip() for x in sources}
+
+    # Create a dictionary with questions and their vectors
+    question_normalized_to_vector: dict[str, List[float]] = {}
+    for question, vector in zip(
+        catalogue_data["all_questions"], catalogue_data["all_embeddings_concatenated"]
+    ):
+        question_normalized = normalize_text(question)
+        if question_normalized not in question_normalized_to_vector:
+            question_normalized_to_vector[question_normalized] = vector
+
+    # Find instrument indexes to remove
+    idxs_instruments_to_remove: List[int] = []
+    for instrument_idx, catalogue_instrument in enumerate(
+        catalogue_data["all_instruments"]
+    ):
+        if catalogue_instrument["metadata"]["source"].lower().strip() not in sources_set:
+            idxs_instruments_to_remove.append(instrument_idx)
+
+    # Remove instruments
+    for idx_instrument_to_remove in sorted(idxs_instruments_to_remove, reverse=True):
+        del catalogue_data["all_instruments"][idx_instrument_to_remove]
+
+    # Create an updated question to vectors dict to contain only questions from the remaining instrument questions
+    updated_question_normalized_to_vector = OrderedDict()
+    idx_question = 0
+    for instrument in catalogue_data["all_instruments"]:
+        questions = [x["question_text"] for x in instrument["questions"]]
+        for question in questions:
+            question_normalized = normalize_text(question)
+            if question_normalized not in updated_question_normalized_to_vector:
+                updated_question_normalized_to_vector[question_normalized] = {
+                    "index": idx_question,
+                    "original_question": question,
+                    "vector": question_normalized_to_vector[question_normalized],
+                }
+                idx_question += 1
+
+    # Update the embeddings
+    catalogue_data["all_embeddings_concatenated"] = np.array(
+        [x["vector"] for x in updated_question_normalized_to_vector.values()]
+    )
+
+    # Update all questions
+    catalogue_data["all_questions"] = [
+        x["original_question"] for x in updated_question_normalized_to_vector.values()
+    ]
+
+    # Recreate instrument index to question index
+    catalogue_data["instrument_idx_to_question_idx"] = []
+    for instrument in catalogue_data["all_instruments"]:
+        questions_normalized = set(
+            [normalize_text(x["question_text"]) for x in instrument["questions"]]
+        )
+        idxs_questions = [
+            updated_question_normalized_to_vector[x]["index"] for x in questions_normalized
+        ]
+        catalogue_data["instrument_idx_to_question_idx"].append(idxs_questions)
+
+    return catalogue_data
 
 
 def check_model_availability(model: dict) -> bool:
@@ -321,7 +400,9 @@ def get_vectorisation_function_for_model(model: dict) -> Callable | None:
     return vectorisation_function
 
 
-def assign_missing_ids_to_instruments(instruments: List[Instrument]) -> List[Instrument]:
+def assign_missing_ids_to_instruments(
+    instruments: List[Instrument],
+) -> List[Instrument]:
     """
     Assign missing IDs to instruments.
     """

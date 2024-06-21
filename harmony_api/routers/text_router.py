@@ -266,7 +266,7 @@ def match(
     response_model=MatchCatalogueResponse,
     status_code=status.HTTP_200_OK,
 )
-def match_catalogue_instruments(
+def match_catalogue(
     match_catalogue_body: MatchCatalogueBody,
     _model_is_available=Depends(
         dependencies.model_from_match_catalogue_body_is_available
@@ -278,6 +278,9 @@ def match_catalogue_instruments(
     """
     Match instruments with catalogue.
     """
+
+    # Source
+    sources = match_catalogue_body.sources
 
     # Model
     model = match_catalogue_body.parameters
@@ -294,6 +297,8 @@ def match_catalogue_instruments(
 
     # Catalogue data
     catalogue_data = helpers.get_catalogue_data(model.model)
+    if sources:
+        catalogue_data = helpers.filter_catalogue_data(catalogue_data=catalogue_data, sources=sources)
 
     # Get vect function
     vectorisation_function = helpers.get_vectorisation_function_for_model(
