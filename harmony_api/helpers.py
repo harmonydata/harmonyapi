@@ -132,16 +132,13 @@ def get_mhc_embeddings(model_name: str) -> tuple:
     return mhc_questions, mhc_all_metadata, mhc_embeddings
 
 
-def get_catalogue_data(model_name: str) -> dict:
+def get_catalogue_data(framework: str) -> dict:
     """
     Get catalogue data.
     """
 
     # Hugging Face
-    if model_name in [
-        HUGGINGFACE_MPNET_BASE_V2["model"],
-        HUGGINGFACE_MINILM_L12_V2["model"],
-    ]:
+    if framework == "huggingface":
         with bz2.open(f"catalogue_data/embeddings_all_float16.pkl.bz2", "rb") as f:
             all_embeddings_concatenated = pkl.load(f)
 

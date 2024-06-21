@@ -44,7 +44,7 @@ from harmony.schemas.responses.text import (
     CacheResponse,
     MatchCatalogueResponse,
 )
-from harmony_api import helpers, dependencies
+from harmony_api import helpers, dependencies, constants
 from harmony_api import http_exceptions
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
@@ -54,6 +54,12 @@ router = APIRouter(prefix="/text")
 # Cache
 instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
+
+# Catalogue data
+catalogue_data_for_model_framework_dict = {}
+for harmony_api_model in constants.ALL_HARMONY_API_MODELS:
+    catalogue_data_for_model_framework = helpers.get_catalogue_data(harmony_api_model["framework"])
+    catalogue_data_for_model_framework_dict[harmony_api_model["framework"]] = catalogue_data_for_model_framework
 
 
 @router.post(path="/parse")
@@ -295,11 +301,6 @@ def match_catalogue(
         instruments=instruments, model=model_dict
     )
 
-    # Catalogue data
-    catalogue_data = helpers.get_catalogue_data(model.model)
-    if sources:
-        catalogue_data = helpers.filter_catalogue_data(catalogue_data=catalogue_data, sources=sources)
-
     # Get vect function
     vectorisation_function = helpers.get_vectorisation_function_for_model(
         model=model_dict
@@ -308,6 +309,11 @@ def match_catalogue(
         raise http_exceptions.CouldNotFindResourceHTTPException(
             "Could not find a vectorisation function for model."
         )
+
+    # Catalogue data
+    catalogue_data = catalogue_data_for_model_framework_dict[model_dict["framework"]]
+    if sources:
+        catalogue_data = helpers.filter_catalogue_data(catalogue_data=catalogue_data, sources=sources)
 
     # Match
     instruments, closest_catalogue_instrument_matches, new_text_vectors = match_instruments_with_catalogue_instruments(
