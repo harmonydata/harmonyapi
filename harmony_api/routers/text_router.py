@@ -310,7 +310,7 @@ def match_catalogue(
         )
 
     # Match
-    instruments, closest_catalogue_instrument_match = match_instruments_with_catalogue_instruments(
+    instruments, closest_catalogue_instrument_matches = match_instruments_with_catalogue_instruments(
         instruments=instruments,
         catalogue_data=catalogue_data,
         vectorisation_function=vectorisation_function,
@@ -319,7 +319,7 @@ def match_catalogue(
 
     response = MatchCatalogueResponse(
         instruments=instruments,
-        closest_catalogue_instrument_match=closest_catalogue_instrument_match,
+        closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
     )
 
     return response
