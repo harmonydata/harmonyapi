@@ -188,7 +188,11 @@ def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
         return text
 
     # Lowercase sources
-    sources_set = {x.lower().strip() for x in sources}
+    sources_set = {x.strip().lower() for x in sources if x.strip()}
+
+    # Nothing to filter
+    if not sources_set:
+        return catalogue_data
 
     # Create a dictionary with questions and their vectors
     question_normalized_to_vector: dict[str, List[float]] = {}
@@ -204,7 +208,7 @@ def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
     for instrument_idx, catalogue_instrument in enumerate(
         catalogue_data["all_instruments"]
     ):
-        if catalogue_instrument["metadata"]["source"].lower().strip() not in sources_set:
+        if catalogue_instrument["metadata"]["source"].strip().lower() not in sources_set:
             idxs_instruments_to_remove.append(instrument_idx)
 
     # Remove instruments
