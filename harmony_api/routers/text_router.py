@@ -29,21 +29,18 @@ import copy
 from typing import Annotated
 from typing import List
 
-from fastapi import APIRouter, Body, status, Depends
+from fastapi import APIRouter, Body, status, Depends, Query
 
 from harmony.matching.default_matcher import match_instruments_with_function
-from harmony.matching.matcher import match_instruments_with_catalogue_instruments
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.schemas.requests.text import (
     RawFile,
     Instrument,
     MatchBody,
-    MatchCatalogueBody,
 )
 from harmony.schemas.responses.text import (
     MatchResponse,
     CacheResponse,
-    MatchCatalogueResponse,
 )
 from harmony_api import helpers, dependencies, constants
 from harmony_api import http_exceptions
@@ -188,6 +185,8 @@ def parse_instruments(
 def match(
     match_body: MatchBody,
     _model_is_available=Depends(dependencies.model_from_match_body_is_available),
+    include_catalogue_matches: bool = Query(default=False),
+    catalogue_sources: List[str] = Query(default=[]),
 ) -> MatchResponse:
     """
     Match instruments.
@@ -196,13 +195,6 @@ def match(
     # Model
     model = match_body.parameters
     model_dict = model.dict()
-
-    # Assign any missing IDs to instruments
-    for instrument in match_body.instruments:
-        if instrument.file_id is None:
-            instrument.file_id = uuid.uuid4().hex
-        if instrument.instrument_id is None:
-            instrument.instrument_id = uuid.uuid4().hex
 
     # Get query
     query = match_body.query
@@ -234,12 +226,32 @@ def match(
             "Could not find a vectorisation function for model."
         )
 
+    # Currently only the model "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" is supported for
+    # catalogue matches.
+    if model_dict["model"] != constants.HUGGINGFACE_MINILM_L12_V2["model"]:
+        include_catalogue_matches = False
+
+    # Catalogue data
+    catalogue_data = {}
+    if include_catalogue_matches:
+        catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
+        catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
+        catalogue_data.update(catalogue_data_default)
+
+        # Filter catalogue data for sources
+        if catalogue_sources:
+            catalogue_data = helpers.filter_catalogue_data(
+                catalogue_data=copy.deepcopy(catalogue_data), sources=catalogue_sources
+            )
+
     # Match
     (
         questions,
         matches,
         query_similarity,
         new_text_vectors,
+        instruments,
+        closest_catalogue_instrument_matches,
     ) = match_instruments_with_function(
         instruments=instruments,
         query=query,
@@ -248,6 +260,8 @@ def match(
         mhc_embeddings=mhc_embeddings,
         texts_cached_vectors=texts_cached_vectors,
         vectorisation_function=vectorisation_function,
+        include_catalogue_matches=include_catalogue_matches,
+        catalogue_data=catalogue_data,
     )
 
     # Add new vectors to cache
@@ -265,92 +279,13 @@ def match(
     if query_similarity is not None:
         query_similarity = query_similarity.tolist()
 
-    response = MatchResponse(
+    return MatchResponse(
+        instruments=instruments,
         questions=questions,
         matches=matches_jsonable,
         query_similarity=query_similarity,
-    )
-
-    return response
-
-
-@router.post(
-    path="/match-catalogue",
-    response_model=MatchCatalogueResponse,
-    status_code=status.HTTP_200_OK,
-)
-def match_catalogue(
-    match_catalogue_body: MatchCatalogueBody,
-    _model_is_available=Depends(
-        dependencies.model_from_match_catalogue_body_is_available
-    ),
-    _model_is_minilm_l12_v2=Depends(
-        dependencies.model_from_match_catalogue_body_is_minilm_l12_v2
-    ),
-) -> MatchCatalogueResponse:
-    """
-    Match instruments with catalogue.
-    """
-
-    # Source
-    sources = match_catalogue_body.sources
-
-    # Model
-    model = match_catalogue_body.parameters
-    model_dict = model.dict()
-
-    # Get instruments
-    instruments = match_catalogue_body.instruments
-    instruments = helpers.assign_missing_ids_to_instruments(instruments)
-
-    # Get cached vectors of texts
-    texts_cached_vectors = helpers.get_cached_text_vectors(
-        instruments=instruments, model=model_dict
-    )
-
-    # Get vect function
-    vectorisation_function = helpers.get_vectorisation_function_for_model(
-        model=model_dict
-    )
-    if not vectorisation_function:
-        raise http_exceptions.CouldNotFindResourceHTTPException(
-            "Could not find a vectorisation function for model."
-        )
-
-    # Catalogue data
-    catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
-    catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
-    catalogue_data.update(catalogue_data_default)
-
-    # Filter catalogue data for sources
-    if sources:
-        catalogue_data = helpers.filter_catalogue_data(
-            catalogue_data=copy.deepcopy(catalogue_data),
-            sources=sources
-        )
-
-    # Match
-    instruments, closest_catalogue_instrument_matches, new_text_vectors = match_instruments_with_catalogue_instruments(
-        instruments=instruments,
-        catalogue_data=catalogue_data,
-        vectorisation_function=vectorisation_function,
-        texts_cached_vectors=texts_cached_vectors,
-    )
-
-    # Add new vectors to cache
-    for key, value in new_text_vectors.items():
-        vector_key = vectors_cache.generate_key(
-            text=key, model_framework=model.framework, model_name=model.model
-        )
-        if not vectors_cache.has(vector_key):
-            vectors_cache.set(vector_key, {key: value})
-
-    response = MatchCatalogueResponse(
-        instruments=instruments,
         closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
     )
-
-    return response
 
 
 @router.post(
@@ -383,4 +318,3 @@ def get_cache() -> CacheResponse:
         instruments=instruments_list,
         vectors=vectors_list,
     )
-
