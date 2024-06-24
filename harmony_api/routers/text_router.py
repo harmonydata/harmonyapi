@@ -57,14 +57,14 @@ instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
 
 # Catalogue data
-print("INFO:\t  Downloading catalogue data...")
-catalogue_default_data = helpers.download_catalogue_default_data()
-catalogue_embeddings_for_model_dict = {}
+print("INFO:\t  Loading catalogue data...")
+catalogue_data_default = helpers.get_catalogue_data_default()
+catalogue_data_embeddings_for_model = {}
 for harmony_api_model in constants.ALL_HARMONY_API_MODELS:
-    catalogue_embeddings_for_model = helpers.download_catalogue_embeddings(
+    catalogue_embeddings_for_model = helpers.get_catalogue_data_model_embeddings(
         harmony_api_model
     )
-    catalogue_embeddings_for_model_dict[harmony_api_model["model"]] = (
+    catalogue_data_embeddings_for_model[harmony_api_model["model"]] = (
         catalogue_embeddings_for_model
     )
 
@@ -318,9 +318,9 @@ def match_catalogue(
         )
 
     # Catalogue data
-    catalogue_embeddings = catalogue_embeddings_for_model_dict[model_dict["model"]]
+    catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
     catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
-    catalogue_data.update(catalogue_default_data)
+    catalogue_data.update(catalogue_data_default)
 
     # Filter catalogue data for sources
     if sources:
