@@ -29,6 +29,7 @@ import json
 import os
 import pickle as pkl
 import re
+import requests
 import uuid
 from collections import OrderedDict
 from typing import List, Callable
@@ -151,12 +152,17 @@ def get_catalogue_data_default() -> dict:
         with open(all_questions_ever_seen_json, "r", encoding="utf-8") as file:
             all_questions = json.loads(file.read())
     else:
-        if settings.AZURE_STORAGE_CONNECTION_STRING:
-            all_questions_blob = download_blob(
-                blob_name=f"catalogue_data/{all_questions_ever_seen_json}",
-                container_name="$web",
-            )
-            all_questions = json.loads(all_questions_blob.readall().decode("utf-8"))
+        if settings.AZURE_STORAGE_URL:
+            with requests.get(
+                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{all_questions_ever_seen_json}",
+                stream=True,
+            ) as response:
+                if response.ok:
+                    buffer = BytesIO()
+                    for chunk in response.iter_content(chunk_size=1024):
+                        buffer.write(chunk)
+                    all_questions = json.loads(buffer.getvalue().decode("utf-8"))
+                    buffer.close()
 
     # Instrument index to question indexes
     instrument_idx_to_question_idxs_json = "instrument_idx_to_question_idxs.json"
@@ -164,14 +170,19 @@ def get_catalogue_data_default() -> dict:
         with open(instrument_idx_to_question_idxs_json, "r", encoding="utf-8") as file:
             instrument_idx_to_question_idx = json.loads(file.read())
     else:
-        if settings.AZURE_STORAGE_CONNECTION_STRING:
-            instrument_idx_to_question_idxs_blob = download_blob(
-                blob_name=f"catalogue_data/{instrument_idx_to_question_idxs_json}",
-                container_name="$web",
-            )
-            instrument_idx_to_question_idx = json.loads(
-                instrument_idx_to_question_idxs_blob.readall().decode("utf-8")
-            )
+        if settings.AZURE_STORAGE_URL:
+            with requests.get(
+                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{instrument_idx_to_question_idxs_json}",
+                stream=True,
+            ) as response:
+                if response.ok:
+                    buffer = BytesIO()
+                    for chunk in response.iter_content(chunk_size=1024):
+                        buffer.write(chunk)
+                    instrument_idx_to_question_idx = json.loads(
+                        buffer.getvalue().decode("utf-8")
+                    )
+                    buffer.close()
 
     # All instruments
     all_instruments_preprocessed_json = "all_instruments_preprocessed.json"
@@ -181,16 +192,19 @@ def get_catalogue_data_default() -> dict:
                 instrument = json.loads(line)
                 all_instruments.append(instrument)
     else:
-        if settings.AZURE_STORAGE_CONNECTION_STRING:
-            all_instruments_preprocessed_blob = download_blob(
-                blob_name=f"catalogue_data/{all_instruments_preprocessed_json}",
-                container_name="$web",
-            )
-            for line in (
-                all_instruments_preprocessed_blob.readall().decode("utf-8").splitlines()
-            ):
-                instrument = json.loads(line)
-                all_instruments.append(instrument)
+        if settings.AZURE_STORAGE_URL:
+            with requests.get(
+                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{all_instruments_preprocessed_json}",
+                stream=True,
+            ) as response:
+                if response.ok:
+                    buffer = BytesIO()
+                    for chunk in response.iter_content(chunk_size=1024):
+                        buffer.write(chunk)
+                    for line in buffer.getvalue().decode("utf-8").splitlines():
+                        instrument = json.loads(line)
+                        all_instruments.append(instrument)
+                    buffer.close()
 
     return {
         "all_questions": all_questions,
@@ -220,12 +234,20 @@ def get_catalogue_data_model_embeddings(model: dict) -> np.ndarray:
         with bz2.open(embeddings_filename, "rb") as f:
             all_embeddings_concatenated = pkl.load(f)
     else:
-        if settings.AZURE_STORAGE_CONNECTION_STRING:
-            embeddings_all_float16_blob = download_blob(
-                blob_name=f"catalogue_data/{embeddings_filename}", container_name="$web"
-            )
-            with bz2.open(BytesIO(embeddings_all_float16_blob.readall()), "rb") as f:
-                all_embeddings_concatenated = pkl.load(f)
+        decompressor_results = []
+        decompressor = bz2.BZ2Decompressor()
+        with requests.get(
+            url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{embeddings_filename}",
+            stream=True,
+        ) as response:
+            if response.ok:
+                for chunk in response.iter_content(chunk_size=1024):
+                    decompressor_results.append(decompressor.decompress(chunk))
+                    if decompressor.eof:
+                        break
+                buffer = BytesIO(b"".join(decompressor_results))
+                all_embeddings_concatenated = pkl.load(buffer)
+                buffer.close()
 
     return all_embeddings_concatenated
 
@@ -480,24 +502,6 @@ def assign_missing_ids_to_instruments(
             instrument.instrument_id = uuid.uuid4().hex
 
     return instruments
-
-
-def download_blob(
-    blob_name: str, container_name: str
-) -> StorageStreamDownloader[bytes]:
-    """
-    Download blob.
-
-    :param blob_name: The blob name.
-    :param container_name: The container name.
-    """
-
-    container_client = ContainerClient.from_connection_string(
-        conn_str=settings.AZURE_STORAGE_CONNECTION_STRING,
-        container_name=container_name,
-    )
-
-    return container_client.download_blob(blob=blob_name)
 
 
 def create_embeddings_filename_for_model(model: dict) -> str:
