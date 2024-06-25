@@ -32,6 +32,7 @@ from typing import List
 from fastapi import APIRouter, Body, status, Depends, Query
 
 from harmony.matching.default_matcher import match_instruments_with_function
+from harmony.matching.matcher import match_instruments_with_catalogue_instruments
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.schemas.requests.text import (
     RawFile,
@@ -256,8 +257,6 @@ def match(
         matches,
         query_similarity,
         new_text_vectors,
-        instruments,
-        closest_catalogue_instrument_matches,
     ) = match_instruments_with_function(
         instruments=instruments,
         query=query,
@@ -266,9 +265,17 @@ def match(
         mhc_embeddings=mhc_embeddings,
         texts_cached_vectors=texts_cached_vectors,
         vectorisation_function=vectorisation_function,
-        include_catalogue_matches=include_catalogue_matches,
-        catalogue_data=catalogue_data,
     )
+
+    # Get catalogue matches
+    closest_catalogue_instrument_matches = []
+    if include_catalogue_matches:
+        instruments, closest_catalogue_instrument_matches = match_instruments_with_catalogue_instruments(
+            instruments=instruments,
+            catalogue_data=catalogue_data,
+            vectorisation_function=vectorisation_function,
+            texts_cached_vectors=texts_cached_vectors,
+        )
 
     # Add new vectors to cache
     for key, value in new_text_vectors.items():
