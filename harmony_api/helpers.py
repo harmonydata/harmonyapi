@@ -234,20 +234,21 @@ def get_catalogue_data_model_embeddings(model: dict) -> np.ndarray:
         with bz2.open(embeddings_filename, "rb") as f:
             all_embeddings_concatenated = pkl.load(f)
     else:
-        decompressor_results = []
-        decompressor = bz2.BZ2Decompressor()
-        with requests.get(
-            url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{embeddings_filename}",
-            stream=True,
-        ) as response:
-            if response.ok:
-                for chunk in response.iter_content(chunk_size=1024):
-                    decompressor_results.append(decompressor.decompress(chunk))
-                    if decompressor.eof:
-                        break
-                buffer = BytesIO(b"".join(decompressor_results))
-                all_embeddings_concatenated = pkl.load(buffer)
-                buffer.close()
+        if settings.AZURE_STORAGE_URL:
+            decompressor_results = []
+            decompressor = bz2.BZ2Decompressor()
+            with requests.get(
+                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{embeddings_filename}",
+                stream=True,
+            ) as response:
+                if response.ok:
+                    for chunk in response.iter_content(chunk_size=1024):
+                        decompressor_results.append(decompressor.decompress(chunk))
+                        if decompressor.eof:
+                            break
+                    buffer = BytesIO(b"".join(decompressor_results))
+                    all_embeddings_concatenated = pkl.load(buffer)
+                    buffer.close()
 
     return all_embeddings_concatenated
 
