@@ -141,17 +141,22 @@ def get_catalogue_data_default() -> dict:
     Check if the files are available in the current directory, if not, download them from Azure Blob Storage.
     """
 
+    all_questions = []
+    all_instruments = []
+    instrument_idx_to_question_idx = []
+
     # All questions
     all_questions_ever_seen_json = "all_questions_ever_seen.json"
     if os.path.isfile(all_questions_ever_seen_json):
         with open(all_questions_ever_seen_json, "r", encoding="utf-8") as file:
             all_questions = json.loads(file.read())
     else:
-        all_questions_blob = download_blob(
-            blob_name=f"catalogue_data/{all_questions_ever_seen_json}",
-            container_name="$web",
-        )
-        all_questions = json.loads(all_questions_blob.readall().decode("utf-8"))
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+            all_questions_blob = download_blob(
+                blob_name=f"catalogue_data/{all_questions_ever_seen_json}",
+                container_name="$web",
+            )
+            all_questions = json.loads(all_questions_blob.readall().decode("utf-8"))
 
     # Instrument index to question indexes
     instrument_idx_to_question_idxs_json = "instrument_idx_to_question_idxs.json"
@@ -159,32 +164,33 @@ def get_catalogue_data_default() -> dict:
         with open(instrument_idx_to_question_idxs_json, "r", encoding="utf-8") as file:
             instrument_idx_to_question_idx = json.loads(file.read())
     else:
-        instrument_idx_to_question_idxs_blob = download_blob(
-            blob_name=f"catalogue_data/{instrument_idx_to_question_idxs_json}",
-            container_name="$web",
-        )
-        instrument_idx_to_question_idx = json.loads(
-            instrument_idx_to_question_idxs_blob.readall().decode("utf-8")
-        )
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+            instrument_idx_to_question_idxs_blob = download_blob(
+                blob_name=f"catalogue_data/{instrument_idx_to_question_idxs_json}",
+                container_name="$web",
+            )
+            instrument_idx_to_question_idx = json.loads(
+                instrument_idx_to_question_idxs_blob.readall().decode("utf-8")
+            )
 
     # All instruments
     all_instruments_preprocessed_json = "all_instruments_preprocessed.json"
-    all_instruments = []
     if os.path.isfile(all_instruments_preprocessed_json):
         with open(all_instruments_preprocessed_json, "r", encoding="utf-8") as file:
             for line in file:
                 instrument = json.loads(line)
                 all_instruments.append(instrument)
     else:
-        all_instruments_preprocessed_blob = download_blob(
-            blob_name=f"catalogue_data/{all_instruments_preprocessed_json}",
-            container_name="$web",
-        )
-        for line in (
-            all_instruments_preprocessed_blob.readall().decode("utf-8").splitlines()
-        ):
-            instrument = json.loads(line)
-            all_instruments.append(instrument)
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+            all_instruments_preprocessed_blob = download_blob(
+                blob_name=f"catalogue_data/{all_instruments_preprocessed_json}",
+                container_name="$web",
+            )
+            for line in (
+                all_instruments_preprocessed_blob.readall().decode("utf-8").splitlines()
+            ):
+                instrument = json.loads(line)
+                all_instruments.append(instrument)
 
     return {
         "all_questions": all_questions,
@@ -202,9 +208,11 @@ def get_catalogue_data_model_embeddings(model: dict) -> np.ndarray:
     :param model: The model to download catalogue embeddings for.
     """
 
+    all_embeddings_concatenated = np.array([])
+
     # Currently only "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" is supported
     if model["model"] != HUGGINGFACE_MINILM_L12_V2["model"]:
-        return np.ndarray([])
+        return all_embeddings_concatenated
 
     # Embeddings
     embeddings_filename = create_embeddings_filename_for_model(model)
@@ -212,11 +220,12 @@ def get_catalogue_data_model_embeddings(model: dict) -> np.ndarray:
         with bz2.open(embeddings_filename, "rb") as f:
             all_embeddings_concatenated = pkl.load(f)
     else:
-        embeddings_all_float16_blob = download_blob(
-            blob_name=f"catalogue_data/{embeddings_filename}", container_name="$web"
-        )
-        with bz2.open(BytesIO(embeddings_all_float16_blob.readall()), "rb") as f:
-            all_embeddings_concatenated = pkl.load(f)
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+            embeddings_all_float16_blob = download_blob(
+                blob_name=f"catalogue_data/{embeddings_filename}", container_name="$web"
+            )
+            with bz2.open(BytesIO(embeddings_all_float16_blob.readall()), "rb") as f:
+                all_embeddings_concatenated = pkl.load(f)
 
     return all_embeddings_concatenated
 

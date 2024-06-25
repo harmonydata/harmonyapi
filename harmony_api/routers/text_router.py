@@ -46,6 +46,9 @@ from harmony_api import helpers, dependencies, constants
 from harmony_api import http_exceptions
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
+from harmony_api.core.settings import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/text")
 
@@ -232,9 +235,12 @@ def match(
         include_catalogue_matches = False
 
     # Catalogue data
+    catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
+    if catalogue_embeddings.size == 0:
+        # If the embeddings are not available, do not include catalogue matches
+        include_catalogue_matches = False
     catalogue_data = {}
     if include_catalogue_matches:
-        catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
         catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
         catalogue_data.update(catalogue_data_default)
 
