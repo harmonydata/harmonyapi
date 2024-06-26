@@ -36,7 +36,6 @@ from typing import List, Callable
 from io import BytesIO
 
 import numpy as np
-from azure.storage.blob import ContainerClient, StorageStreamDownloader
 
 from harmony.matching.negator import negate
 from harmony.schemas.requests.text import Instrument, Question
