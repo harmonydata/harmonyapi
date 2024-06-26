@@ -96,7 +96,6 @@ class Server(uvicorn.Server):
 
 async def main():
     # Load cache
-    print("INFO:\t  Loading cache...")
     InstrumentsCache()
     VectorsCache()
 

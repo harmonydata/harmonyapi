@@ -135,3 +135,9 @@ data/
 # Cache
 instruments_cache.json
 vectors_cache.json
+
+# Catalogue data
+huggingface_sentence_transformers_paraphrase_multilingual_MiniLM_L12_v2_embeddings_all_float16.pkl.bz2
+all_questions_ever_seen.json
+all_instruments_preprocessed.json
+instrument_idx_to_question_idxs.json

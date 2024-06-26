@@ -4,11 +4,12 @@ from sentence_transformers import SentenceTransformer
 from harmony_api.constants import HUGGINGFACE_MINILM_L12_V2, HUGGINGFACE_MPNET_BASE_V2
 
 # Load Hugging Face sentence transformers
+print("INFO:\t  Checking Hugging Face models...")
 model_huggingface_minilm_l12_v2 = SentenceTransformer(
-    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    HUGGINGFACE_MINILM_L12_V2["model"]
 )
 model_huggingface_mpnet_base_v2 = SentenceTransformer(
-    "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+    HUGGINGFACE_MPNET_BASE_V2["model"]
 )
 
 

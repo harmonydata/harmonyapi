@@ -44,6 +44,8 @@ class InstrumentsCache(metaclass=SingletonMeta):
     """
 
     def __init__(self):
+        print("INFO:\t  Loading instruments cache...")
+
         self.__cache: dict[str, List[Instrument]] = {}
 
         self.__load()
