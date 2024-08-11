@@ -40,7 +40,7 @@ from harmony_api.routers.health_check_router import router as health_check_route
 from harmony_api.routers.info_router import router as info_router
 from harmony_api.routers.text_router import router as text_router
 from harmony_api.services.instruments_cache import InstrumentsCache
-from harmony_api.scheduler import app as app_rocketry
+# from harmony_api.scheduler import app as app_rocketry
 from harmony_api.services.vectors_cache import VectorsCache
 
 description = """
@@ -89,7 +89,7 @@ class Server(uvicorn.Server):
     """
 
     def handle_exit(self, sig: int, frame):
-        app_rocketry.session.shut_down()
+        # app_rocketry.session.shut_down()
 
         return super().handle_exit(sig, frame)
 
@@ -112,11 +112,12 @@ async def main():
     )
 
     api = asyncio.create_task(server.serve())
-    scheduler = asyncio.create_task(app_rocketry.serve())
+    # scheduler = asyncio.create_task(app_rocketry.serve())
 
     # Start both applications (FastAPI & Rocketry)
     print("INFO:\t  Starting applications...")
-    await asyncio.wait([api, scheduler])
+    # await asyncio.wait([api, scheduler])
+    await asyncio.wait(api)
 
 
 if __name__ == "__main__":

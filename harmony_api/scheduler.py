@@ -25,16 +25,16 @@ SOFTWARE.
 """
 
 from fastapi.concurrency import run_in_threadpool
-from rocketry import Rocketry
-from rocketry.conds import cron
+# from rocketry import Rocketry
+# from rocketry.conds import cron
 
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
 
-app = Rocketry(executation="async")
+# app = Rocketry(executation="async")
 
 
-@app.task(cron("0 */12 * * *"))
+# @app.task(cron("0 */12 * * *"))
 async def do_every_12th_hour():
     """
     Save the caches to disk every 12th hour.
