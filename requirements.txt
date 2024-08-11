@@ -1,6 +1,7 @@
 fastapi==0.109.1
 requests==2.31.0
-pydantic==1.10.7
+pydantic==2.8.2
+pydantic-settings==2.4.0
 uvicorn==0.21.1
 pandas==2.0.0
 tika==2.6.0
@@ -10,7 +11,6 @@ XlsxWriter==3.0.9
 openpyxl==3.1.2
 sentence-transformers==2.2.2
 wget==3.2
-rocketry==2.5.1
 openai==1.30.2
 vertexai==1.49.0
 numpy==1.26.4

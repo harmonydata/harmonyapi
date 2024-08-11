@@ -28,7 +28,7 @@ import json
 import os
 from typing import Union
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", '{}')
 if GOOGLE_APPLICATION_CREDENTIALS:
