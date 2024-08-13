@@ -186,11 +186,11 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Model
     model = match_body.parameters
-    if model.dict() not in ALL_HARMONY_API_MODELS:
+    if model.model_dump(mode="json") not in ALL_HARMONY_API_MODELS:
         raise http_exceptions.CouldNotProcessRequestHTTPException(
             "Could not process request because the model does not exist."
         )
-    if not helpers.check_model_availability(model.dict()):
+    if not helpers.check_model_availability(model.model_dump(mode="json")):
         raise http_exceptions.CouldNotProcessRequestHTTPException(
             "Could not process request because the model is not available."
         )
