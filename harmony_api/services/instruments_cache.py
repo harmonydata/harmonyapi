@@ -65,7 +65,7 @@ class InstrumentsCache(metaclass=SingletonMeta):
         #  Dict to instruments
         cache_parsed: dict[str, List[Instrument]] = {}
         for key, value in cache.items():
-            instruments = [Instrument.parse_obj(x) for x in value]
+            instruments = [Instrument.model_validate(x) for x in value]
             cache_parsed[key] = instruments
 
         self.__cache = cache_parsed
@@ -113,7 +113,7 @@ class InstrumentsCache(metaclass=SingletonMeta):
         # Instruments to dict
         cache_parsed: dict[str, List] = {}
         for key, value in self.__cache.items():
-            instruments = [x.model_dump(mode="json")() for x in value]
+            instruments = [x.model_dump(mode="json") for x in value]
             cache_parsed[key] = instruments
 
         with open(cache_file_path, "w", encoding="utf8") as file:

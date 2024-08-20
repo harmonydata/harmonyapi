@@ -41,10 +41,10 @@ class Settings(BaseSettings):
     # General harmony_api config
     VERSION: str = "2.0"
     APP_TITLE: str = "Harmony API"
-    TIKA_ENDPOINT: str = os.getenv("TIKA_ENDPOINT", "")
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
-    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
+    TIKA_ENDPOINT: str = os.getenv("TIKA_ENDPOINT", "http://tika:9998")
+    OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_API_KEY: str | None = os.getenv("AZURE_OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT: str | None = os.getenv("AZURE_OPENAI_ENDPOINT")
     GOOGLE_APPLICATION_CREDENTIALS: dict = GOOGLE_APPLICATION_CREDENTIALS
 
 
@@ -79,7 +79,7 @@ class ProdSettings(Settings):
     }
 
 
-def get_settings():
+def get_settings() -> Union[DevSettings | ProdSettings]:
     env = os.getenv("STAGE", "dev")
     settings_type = {
         "dev": DevSettings(),

@@ -29,6 +29,7 @@ import sys
 sys.path.append("./harmony/src")
 
 import asyncio
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -40,7 +41,7 @@ from harmony_api.routers.health_check_router import router as health_check_route
 from harmony_api.routers.info_router import router as info_router
 from harmony_api.routers.text_router import router as text_router
 from harmony_api.services.instruments_cache import InstrumentsCache
-# from harmony_api.scheduler import app as app_rocketry
+from harmony_api.scheduler import scheduler
 from harmony_api.services.vectors_cache import VectorsCache
 
 description = """
@@ -50,10 +51,18 @@ Harmony is a tool using AI which allows you to compare items from questionnaires
 You can try Harmony at <a href="https://harmonydata.ac.uk/app">harmonydata.ac.uk/harmony_api</a> and you can read our blog at <a href="https://harmonydata.ac.uk">harmonydata.ac.uk</a>.
 """
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    scheduler.start()
+
+    yield
+
 app_fastapi = FastAPI(
     title=settings.APP_TITLE,
     description=description,
     version=settings.VERSION,
+    lifespan=lifespan,
     docs_url="/docs",
     contact={
         "name": "Thomas Wood",
@@ -82,25 +91,13 @@ app_fastapi.include_router(text_router, tags=["Text"])
 app_fastapi.include_router(info_router, tags=["Info"])
 
 
-class Server(uvicorn.Server):
-    """
-    Custom uvicorn.Server
-    Override signals and include Rocketry
-    """
-
-    def handle_exit(self, sig: int, frame):
-        # app_rocketry.session.shut_down()
-
-        return super().handle_exit(sig, frame)
-
-
 async def main():
     # Load cache
     print("INFO:\t  Loading cache...")
     InstrumentsCache()
     VectorsCache()
 
-    server = Server(
+    server = uvicorn.Server(
         config=uvicorn.Config(
             app=app_fastapi,
             host=settings.SERVER_HOST,
@@ -112,12 +109,10 @@ async def main():
     )
 
     api = asyncio.create_task(server.serve())
-    # scheduler = asyncio.create_task(app_rocketry.serve())
 
-    # Start both applications (FastAPI & Rocketry)
-    print("INFO:\t  Starting applications...")
-    # await asyncio.wait([api, scheduler])
-    await asyncio.wait(api)
+    # Start FastAPI
+    print("INFO:\t  Starting application...")
+    await asyncio.wait([api])
 
 
 if __name__ == "__main__":

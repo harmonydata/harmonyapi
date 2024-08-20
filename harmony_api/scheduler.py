@@ -24,32 +24,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from fastapi.concurrency import run_in_threadpool
-# from rocketry import Rocketry
-# from rocketry.conds import cron
+from apscheduler.jobstores.memory import MemoryJobStore
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor
 
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
 
-# app = Rocketry(executation="async")
+# Jobstores
+jobstores = {
+    "default": MemoryJobStore()
+}
+
+# Executors
+executors = {
+    "default": ThreadPoolExecutor(),
+}
+
+scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, timezone="UTC")
 
 
-# @app.task(cron("0 */12 * * *"))
-async def do_every_12th_hour():
+@scheduler.scheduled_job(
+    "cron", year="*", month="*", day="*", hour="*/12", minute="0", second="0"
+)
+def do_every_12th_hour():
     """
-    Save the caches to disk every 12th hour.
+    Save the caches to disk.
 
-    Runs at minute 0 past every 12th hour
+    Runs at minute 0 past every 12th hour.
     """
 
     # Save instruments cache to disk
     try:
-        await run_in_threadpool(InstrumentsCache().save)
+        InstrumentsCache().save()
     except (Exception,) as e:
         print(f"Could not save instruments cache: {str(e)}.")
 
     # Save vectors cache to disk
     try:
-        await run_in_threadpool(VectorsCache().save)
+        VectorsCache().save()
     except (Exception,) as e:
         print(f"Could not save vectors cache: {str(e)}.")
