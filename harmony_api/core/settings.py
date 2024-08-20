@@ -28,7 +28,7 @@ import json
 import os
 from typing import Union
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", '{}')
 if GOOGLE_APPLICATION_CREDENTIALS:
@@ -41,12 +41,11 @@ class Settings(BaseSettings):
     # General harmony_api config
     VERSION: str = "2.0"
     APP_TITLE: str = "Harmony API"
-    TIKA_SERVER_ENDPOINT: str = os.getenv("TIKA_SERVER_ENDPOINT", "http://tika:9998")
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
-    AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
-    AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
+    TIKA_ENDPOINT: str = os.getenv("TIKA_ENDPOINT", "http://tika:9998")
+    OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
+    AZURE_OPENAI_API_KEY: str | None = os.getenv("AZURE_OPENAI_API_KEY")
+    AZURE_OPENAI_ENDPOINT: str | None = os.getenv("AZURE_OPENAI_ENDPOINT")
     GOOGLE_APPLICATION_CREDENTIALS: dict = GOOGLE_APPLICATION_CREDENTIALS
-    AZURE_STORAGE_URL: str = os.getenv("AZURE_STORAGE_URL")
 
 
 class DevSettings(Settings):
@@ -80,7 +79,7 @@ class ProdSettings(Settings):
     }
 
 
-def get_settings():
+def get_settings() -> Union[DevSettings | ProdSettings]:
     env = os.getenv("STAGE", "dev")
     settings_type = {
         "dev": DevSettings(),

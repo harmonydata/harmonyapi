@@ -182,7 +182,8 @@ Tika:
 `OPENAI_API_KEY` - The OpenAI API key.
 
 `GOOGLE_APPLICATION_CREDENTIALS` - To make use of Google's `Vertex AI`, fill in this environment variable.
-This is the JSON service account file. Make sure to give the service account the required `Vertex AI` role.
+This should be the content of your service account file, so a JSON object is expected as the value for the 
+environment. Make sure to give the service account the required `Vertex AI` role.
 
 `AZURE_OPENAI_API_KEY` - The Azure OpenAI API key.
 

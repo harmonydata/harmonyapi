@@ -198,7 +198,7 @@ def match(
 
     # Model
     model = match_body.parameters
-    model_dict = model.dict()
+    model_dict = model.model_dump(mode="json")
 
     # Get query
     query = match_body.query

@@ -82,7 +82,7 @@ def get_example_instruments() -> List[Instrument]:
         str(os.getcwd()) + "/example_questionnaires.json", "r", encoding="utf-8"
     ) as file:
         for line in file:
-            instrument = Instrument.parse_raw(line)
+            instrument = Instrument.model_validate_json(line)
             example_instruments.append(instrument)
 
     return example_instruments
