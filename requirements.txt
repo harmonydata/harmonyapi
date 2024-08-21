@@ -3,7 +3,7 @@ requests==2.31.0
 pydantic==2.8.2
 pydantic-settings==2.4.0
 uvicorn==0.21.1
-pandas==2.0.0
+pandas==2.2.2
 tika==2.6.0
 lxml==4.9.2
 langdetect==1.0.9
@@ -13,7 +13,7 @@ sentence-transformers==2.2.2
 wget==3.2
 openai==1.30.2
 vertexai==1.49.0
-numpy==1.26.4
+numpy==2.1.0
 sklearn-crfsuite==0.5.0
 scikit-learn==1.5.0
 APScheduler==3.10.4
