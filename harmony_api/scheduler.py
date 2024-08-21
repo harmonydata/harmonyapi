@@ -45,7 +45,7 @@ scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, timezo
 
 
 @scheduler.scheduled_job(
-    "cron", year="*", month="*", day="*", hour="*/12", minute="0", second="0"
+    trigger="cron", max_instances=1, year="*", month="*", day="*", hour="*/12", minute="0", second="0"
 )
 def do_every_12th_hour():
     """
