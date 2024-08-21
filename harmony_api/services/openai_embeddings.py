@@ -17,6 +17,7 @@ if settings.OPENAI_API_KEY:
     openai.api_key = settings.OPENAI_API_KEY
 
 # Check available models
+print("INFO:\t  Checking OpenAI models...")
 HARMONY_API_AVAILABLE_OPENAI_MODELS_LIST: List[str] = []
 if settings.OPENAI_API_KEY:
     openai_client = OpenAI()

@@ -25,42 +25,49 @@ SOFTWARE.
 """
 
 import uuid
+import copy
 from typing import Annotated
 from typing import List
 
-import numpy as np
-from fastapi import APIRouter, Body, status
+from fastapi import APIRouter, Body, status, Depends, Query
 
 from harmony.matching.default_matcher import match_instruments_with_function
-from harmony.matching.negator import negate
+from harmony.matching.matcher import match_instruments_with_catalogue_instruments
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
-from harmony.schemas.requests.text import RawFile, Instrument, MatchBody
-from harmony.schemas.responses.text import MatchResponse, CacheResponse
-from harmony_api import helpers
-from harmony_api import http_exceptions
-from harmony_api.constants import (
-    ALL_HARMONY_API_MODELS,
-    GOOGLE_GECKO_MULTILINGUAL,
-    GOOGLE_GECKO_003,
-    OPENAI_3_LARGE,
-    OPENAI_ADA_02,
-    HUGGINGFACE_MPNET_BASE_V2,
-    HUGGINGFACE_MINILM_L12_V2,
-    AZURE_OPENAI_ADA_02,
-    AZURE_OPENAI_3_LARGE,
+from harmony.schemas.requests.text import (
+    RawFile,
+    Instrument,
+    MatchBody,
 )
-from harmony_api.services import google_embeddings
-from harmony_api.services import hugging_face_embeddings
-from harmony_api.services import openai_embeddings
-from harmony_api.services import azure_openai_embeddings
+from harmony.schemas.responses.text import (
+    MatchResponse,
+    CacheResponse,
+)
+from harmony_api import helpers, dependencies, constants
+from harmony_api import http_exceptions
 from harmony_api.services.instruments_cache import InstrumentsCache
 from harmony_api.services.vectors_cache import VectorsCache
+from harmony_api.core.settings import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/text")
 
 # Cache
 instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
+
+# Catalogue data
+print("INFO:\t  Loading catalogue data...")
+catalogue_data_default = helpers.get_catalogue_data_default()
+catalogue_data_embeddings_for_model = {}
+for harmony_api_model in constants.ALL_HARMONY_API_MODELS:
+    catalogue_embeddings_for_model = helpers.get_catalogue_data_model_embeddings(
+        harmony_api_model
+    )
+    catalogue_data_embeddings_for_model[harmony_api_model["model"]] = (
+        catalogue_embeddings_for_model
+    )
 
 
 @router.post(path="/parse")
@@ -179,28 +186,19 @@ def parse_instruments(
 @router.post(
     path="/match", response_model=MatchResponse, status_code=status.HTTP_200_OK
 )
-def match(match_body: MatchBody) -> MatchResponse:
+def match(
+    match_body: MatchBody,
+    _model_is_available=Depends(dependencies.model_from_match_body_is_available),
+    include_catalogue_matches: bool = Query(default=False),
+    catalogue_sources: List[str] = Query(default=[]),
+) -> MatchResponse:
     """
     Match instruments.
     """
 
     # Model
     model = match_body.parameters
-    if model.model_dump(mode="json") not in ALL_HARMONY_API_MODELS:
-        raise http_exceptions.CouldNotProcessRequestHTTPException(
-            "Could not process request because the model does not exist."
-        )
-    if not helpers.check_model_availability(model.model_dump(mode="json")):
-        raise http_exceptions.CouldNotProcessRequestHTTPException(
-            "Could not process request because the model is not available."
-        )
-
-    # Assign any missing IDs
-    for instrument in match_body.instruments:
-        if instrument.file_id is None:
-            instrument.file_id = uuid.uuid4().hex
-        if instrument.instrument_id is None:
-            instrument.instrument_id = uuid.uuid4().hex
+    model_dict = model.model_dump(mode="json")
 
     # Get query
     query = match_body.query
@@ -211,172 +209,72 @@ def match(match_body: MatchBody) -> MatchResponse:
 
     # Get instruments
     instruments = match_body.instruments
+    instruments = helpers.assign_missing_ids_to_instruments(instruments)
 
     # Get cached vectors of texts
-    cached_text_vectors_dict: dict[str, List[float]] = {}
-    for instrument in instruments:
-        for question in instrument.questions:
-            # Text
-            question_text = question.question_text
-            question_text_key = vectors_cache.generate_key(
-                text=question_text,
-                model_framework=model.framework,
-                model_name=model.model,
-            )
-            if vectors_cache.has(question_text_key):
-                cached_vector = vectors_cache.get(question_text_key)
-                cached_text_vectors_dict[question_text] = cached_vector[question_text]
-
-            # Negated text
-            negated_text = negate(question_text, instrument.language)
-            negated_text_key = vectors_cache.generate_key(
-                text=negated_text,
-                model_framework=model.framework,
-                model_name=model.model,
-            )
-            if vectors_cache.has(negated_text_key):
-                cached_vector = vectors_cache.get(negated_text_key)
-                cached_text_vectors_dict[negated_text] = cached_vector[negated_text]
-
-    # Get cached vector of query
-    if query:
-        query_key = vectors_cache.generate_key(
-            text=query, model_framework=model.framework, model_name=model.model
-        )
-        if vectors_cache.has(query_key):
-            cached_vector = vectors_cache.get(query_key)
-            cached_text_vectors_dict[query] = cached_vector[query]
+    texts_cached_vectors = helpers.get_cached_text_vectors(
+        instruments=instruments, query=query, model=model_dict
+    )
 
     # Get MHC embeddings
     mhc_questions, mhc_all_metadata, mhc_embeddings = helpers.get_mhc_embeddings(
-        model_name=model.model
+        model.model
     )
 
-    questions = []
-    matches = []
-    query_similarity = np.array([])
-    new_text_vectors: dict[str, list[float]] = {}
+    # Get vect function
+    vectorisation_function = helpers.get_vectorisation_function_for_model(
+        model=model_dict
+    )
+    if not vectorisation_function:
+        raise http_exceptions.CouldNotFindResourceHTTPException(
+            "Could not find a vectorisation function for model."
+        )
+
+    # Currently only the model "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" is supported for
+    # catalogue matches.
+    if model_dict["model"] != constants.HUGGINGFACE_MINILM_L12_V2["model"]:
+        include_catalogue_matches = False
+
+    # Catalogue data
+    catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
+    if catalogue_embeddings.size == 0:
+        # If the embeddings are not available, do not include catalogue matches
+        include_catalogue_matches = False
+    catalogue_data = {}
+    if include_catalogue_matches:
+        catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
+        catalogue_data.update(catalogue_data_default)
+
+        # Filter catalogue data for sources
+        if catalogue_sources:
+            catalogue_data = helpers.filter_catalogue_data(
+                catalogue_data=copy.deepcopy(catalogue_data), sources=catalogue_sources
+            )
 
     # Match
-    if (
-        model.framework == HUGGINGFACE_MINILM_L12_V2["framework"]
-        and model.model == HUGGINGFACE_MINILM_L12_V2["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=hugging_face_embeddings.get_hugging_face_embeddings_minilm_l12_v2,
-            )
-        )
-    elif (
-        model.framework == HUGGINGFACE_MPNET_BASE_V2["framework"]
-        and model.model == HUGGINGFACE_MPNET_BASE_V2["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=hugging_face_embeddings.get_hugging_face_embeddings_mpnet_base_v2,
-            )
-        )
-    elif (
-        model.framework == OPENAI_ADA_02["framework"]
-        and model.model == OPENAI_ADA_02["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=openai_embeddings.get_openai_embeddings_ada_02,
-            )
-        )
-    elif (
-        model.framework == OPENAI_3_LARGE["framework"]
-        and model.model == OPENAI_3_LARGE["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=openai_embeddings.get_openai_embeddings_3_large,
-            )
-        )
-    elif (
-        model.framework == AZURE_OPENAI_3_LARGE["framework"]
-        and model.model == AZURE_OPENAI_3_LARGE["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=azure_openai_embeddings.get_azure_openai_embeddings_3_large,
-            )
-        )
-    elif (
-        model.framework == AZURE_OPENAI_ADA_02["framework"]
-        and model.model == AZURE_OPENAI_ADA_02["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=azure_openai_embeddings.get_azure_openai_embeddings_ada_02,
-            )
-        )
-    elif (
-        model.framework == GOOGLE_GECKO_MULTILINGUAL["framework"]
-        and model.model == GOOGLE_GECKO_MULTILINGUAL["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=google_embeddings.get_google_embeddings_gecko_multilingual,
-            )
-        )
-    elif (
-        model.framework == GOOGLE_GECKO_003["framework"]
-        and model.model == GOOGLE_GECKO_003["model"]
-    ):
-        questions, matches, query_similarity, new_text_vectors = (
-            match_instruments_with_function(
-                instruments=instruments,
-                query=query,
-                mhc_questions=mhc_questions,
-                mhc_all_metadatas=mhc_all_metadata,
-                mhc_embeddings=mhc_embeddings,
-                texts_cached_vectors=cached_text_vectors_dict,
-                vectorisation_function=google_embeddings.get_google_embeddings_gecko_003,
-            )
+    (
+        questions,
+        matches,
+        query_similarity,
+        new_text_vectors,
+    ) = match_instruments_with_function(
+        instruments=instruments,
+        query=query,
+        mhc_questions=mhc_questions,
+        mhc_all_metadatas=mhc_all_metadata,
+        mhc_embeddings=mhc_embeddings,
+        texts_cached_vectors=texts_cached_vectors,
+        vectorisation_function=vectorisation_function,
+    )
+
+    # Get catalogue matches
+    closest_catalogue_instrument_matches = []
+    if include_catalogue_matches:
+        instruments, closest_catalogue_instrument_matches = match_instruments_with_catalogue_instruments(
+            instruments=instruments,
+            catalogue_data=catalogue_data,
+            vectorisation_function=vectorisation_function,
+            texts_cached_vectors=texts_cached_vectors,
         )
 
     # Add new vectors to cache
@@ -394,13 +292,13 @@ def match(match_body: MatchBody) -> MatchResponse:
     if query_similarity is not None:
         query_similarity = query_similarity.tolist()
 
-    response = MatchResponse(
+    return MatchResponse(
+        instruments=instruments,
         questions=questions,
         matches=matches_jsonable,
         query_similarity=query_similarity,
+        closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
     )
-
-    return response
 
 
 @router.post(

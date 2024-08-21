@@ -42,6 +42,8 @@ class VectorsCache(metaclass=SingletonMeta):
     """
 
     def __init__(self):
+        print("INFO:\t  Loading vectors cache...")
+
         self.__cache: dict[str, dict[str, List[float]]] = {}
 
         self.__load()

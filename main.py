@@ -93,7 +93,6 @@ app_fastapi.include_router(info_router, tags=["Info"])
 
 async def main():
     # Load cache
-    print("INFO:\t  Loading cache...")
     InstrumentsCache()
     VectorsCache()
 
