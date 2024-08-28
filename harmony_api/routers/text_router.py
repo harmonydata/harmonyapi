@@ -302,7 +302,7 @@ def match(
 
 
 @router.post(
-    path="/examples", response_model=List[Instrument], status_code=status.HTTP_200_OK
+    path="/examples", response_model=List[Instrument], status_code=status.HTTP_200_OK, response_model_exclude_none=True
 )
 def get_example_instruments() -> List[Instrument]:
     """
