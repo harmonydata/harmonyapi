@@ -64,7 +64,22 @@ class VectorsCache(metaclass=SingletonMeta):
 
         self.__cache = cache
 
-    def set(self, key: str, value: dict[str, List[float]]):
+    def add(self, new_text_vectors: dict[str, List[List]], model_name: str, framework: str) -> None:
+        """
+        Add new text vectors to cache.
+
+        :param new_text_vectors: A dict of new text vectors.
+        :param model_name: The model name.
+        :param framework: The framework.
+        """
+
+        for key, value in new_text_vectors.items():
+            vector_key = self.generate_key(
+                text=key, model_framework=framework, model_name=model_name
+            )
+            self.__set(vector_key, {key: value})
+
+    def __set(self, key: str, value: dict[str, List[float]]):
         """
         :param key: The cache key.
         :param value: The cache value.

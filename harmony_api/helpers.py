@@ -252,12 +252,22 @@ def get_catalogue_data_model_embeddings(model: dict) -> np.ndarray:
     return all_embeddings_concatenated
 
 
-def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
+def filter_catalogue_data(
+        catalogue_data: dict,
+        sources: List[str] | None = None,
+        topics: List[str] | None = None,
+        instrument_length_min: int | None = None,
+        instrument_length_max: int | None = None,
+) -> dict:
     """
     Filter catalogue data to only keep instruments with the sources.
 
     :param catalogue_data: Catalogue data.
     :param sources: Only keep instruments from sources.
+    :param topics: Only keep instruments with these topics. Topics can be found in the metadata of each instrument.
+    :param instrument_length_min: Only keep instruments with min number of questions.
+    :param instrument_length_max: Only keep instruments with max number of questions.
+    :return: The filtered catalogue data.
     """
 
     def normalize_text(text: str):
@@ -266,17 +276,19 @@ def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
 
         return text
 
-    # Lowercase sources
-    sources_set = {x.strip().lower() for x in sources if x.strip()}
+    if not sources:
+        sources = []
+    if not topics:
+        topics = []
 
-    # Nothing to filter
-    if not sources_set:
-        return catalogue_data
+    # Lowercase sources and topics
+    sources_set = {x.strip().lower() for x in sources if x.strip()}
+    topics_set = {x.strip().lower() for x in topics if x.strip()}
 
     # Create a dictionary with questions and their vectors
     question_normalized_to_vector: dict[str, List[float]] = {}
     for question, vector in zip(
-        catalogue_data["all_questions"], catalogue_data["all_embeddings_concatenated"]
+            catalogue_data["all_questions"], catalogue_data["all_embeddings_concatenated"]
     ):
         question_normalized = normalize_text(question)
         if question_normalized not in question_normalized_to_vector:
@@ -285,13 +297,45 @@ def filter_catalogue_data(catalogue_data: dict, sources: List[str]) -> dict:
     # Find instrument indexes to remove
     idxs_instruments_to_remove: List[int] = []
     for instrument_idx, catalogue_instrument in enumerate(
-        catalogue_data["all_instruments"]
+            catalogue_data["all_instruments"]
     ):
-        if (
-            catalogue_instrument["metadata"]["source"].strip().lower()
-            not in sources_set
-        ):
-            idxs_instruments_to_remove.append(instrument_idx)
+        questions_len = len(catalogue_instrument["questions"])
+
+        # By min instrument questions length
+        if instrument_length_min:
+            if questions_len < instrument_length_min:
+                idxs_instruments_to_remove.append(instrument_idx)
+                continue
+
+        # By max instrument questions length
+        if instrument_length_max:
+            if questions_len > instrument_length_max:
+                idxs_instruments_to_remove.append(instrument_idx)
+                continue
+
+        # By sources
+        if sources_set:
+            if (
+                    catalogue_instrument["metadata"]["source"].strip().lower()
+                    not in sources_set
+            ):
+                idxs_instruments_to_remove.append(instrument_idx)
+                continue
+
+        # By topics
+        if topics_set:
+            not_found_topics_len = 0
+            catalogue_instrument_topics: list[str] = catalogue_instrument[
+                "metadata"
+            ].get("topics", [])
+            for topic in topics_set:
+                if topic not in [
+                    x.strip().lower() for x in catalogue_instrument_topics if x.strip()
+                ]:
+                    not_found_topics_len += 1
+            if not_found_topics_len == len(topics_set):
+                idxs_instruments_to_remove.append(instrument_idx)
+                continue
 
     # Remove instruments
     for idx_instrument_to_remove in sorted(idxs_instruments_to_remove, reverse=True):
