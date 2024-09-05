@@ -396,6 +396,9 @@ def search_instruments(
             instrument_length_max=instrument_length_max,
         )
 
+    # Return up to 100 instruments
+    max_results = 100
+
     # Query is provided: Match the query with the catalogue instruments
     if query:
         texts_cached_vectors = helpers.get_cached_text_vectors(
@@ -407,6 +410,7 @@ def search_instruments(
             catalogue_data=catalogue_data,
             vectorisation_function=vectorisation_function,
             texts_cached_vectors=texts_cached_vectors,
+            max_results=max_results,
         )
 
         # Add new vectors to cache
@@ -420,8 +424,7 @@ def search_instruments(
 
     # No query provided: Get the first n catalogue instruments
     else:
-        top_n = 100
-        catalogue_instruments = catalogue_data["all_instruments"][:top_n]
+        catalogue_instruments = catalogue_data["all_instruments"][:max_results]
         instruments = [
             Instrument.model_validate(catalogue_instrument)
             for catalogue_instrument in catalogue_instruments
