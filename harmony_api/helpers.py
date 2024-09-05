@@ -79,7 +79,7 @@ def get_example_instruments() -> List[Instrument]:
     example_instruments = []
 
     with open(
-        str(os.getcwd()) + "/example_questionnaires.json", "r", encoding="utf-8"
+            str(os.getcwd()) + "/example_questionnaires.json", "r", encoding="utf-8"
     ) as file:
         for line in file:
             instrument = Instrument.model_validate_json(line)
@@ -108,24 +108,24 @@ def get_mhc_embeddings(model_name: str) -> tuple:
         data_path = os.path.join(dir_path, "../mhc_embeddings")  # submodule
 
         with open(
-            os.path.join(data_path, "mhc_questions.txt"), "r", encoding="utf-8"
+                os.path.join(data_path, "mhc_questions.txt"), "r", encoding="utf-8"
         ) as file:
             for line in file:
                 mhc_question = Question(question_text=line)
                 mhc_questions.append(mhc_question)
 
         with open(
-            os.path.join(data_path, "mhc_all_metadatas.json"), "r", encoding="utf-8"
+                os.path.join(data_path, "mhc_all_metadatas.json"), "r", encoding="utf-8"
         ) as file:
             for line in file:
                 mhc_meta = json.loads(line)
                 mhc_all_metadata.append(mhc_meta)
 
         with open(
-            os.path.join(
-                data_path, f"mhc_embeddings_{model_name.replace('/', '-')}.npy"
-            ),
-            "rb",
+                os.path.join(
+                    data_path, f"mhc_embeddings_{model_name.replace('/', '-')}.npy"
+                ),
+                "rb",
         ) as file:
             mhc_embeddings = np.load(file, allow_pickle=True)
     except (Exception,) as e:
@@ -153,8 +153,8 @@ def get_catalogue_data_default() -> dict:
     else:
         if settings.AZURE_STORAGE_URL:
             with requests.get(
-                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{all_questions_ever_seen_json}",
-                stream=True,
+                    url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{all_questions_ever_seen_json}",
+                    stream=True,
             ) as response:
                 if response.ok:
                     buffer = BytesIO()
@@ -171,8 +171,8 @@ def get_catalogue_data_default() -> dict:
     else:
         if settings.AZURE_STORAGE_URL:
             with requests.get(
-                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{instrument_idx_to_question_idxs_json}",
-                stream=True,
+                    url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{instrument_idx_to_question_idxs_json}",
+                    stream=True,
             ) as response:
                 if response.ok:
                     buffer = BytesIO()
@@ -193,8 +193,8 @@ def get_catalogue_data_default() -> dict:
     else:
         if settings.AZURE_STORAGE_URL:
             with requests.get(
-                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{all_instruments_preprocessed_json}",
-                stream=True,
+                    url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{all_instruments_preprocessed_json}",
+                    stream=True,
             ) as response:
                 if response.ok:
                     buffer = BytesIO()
@@ -237,8 +237,8 @@ def get_catalogue_data_model_embeddings(model: dict) -> np.ndarray:
             decompressor_results = []
             decompressor = bz2.BZ2Decompressor()
             with requests.get(
-                url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{embeddings_filename}",
-                stream=True,
+                    url=f"{settings.AZURE_STORAGE_URL}/catalogue_data/{embeddings_filename}",
+                    stream=True,
             ) as response:
                 if response.ok:
                     for chunk in response.iter_content(chunk_size=1024):
@@ -280,6 +280,17 @@ def filter_catalogue_data(
         sources = []
     if not topics:
         topics = []
+
+    # If the value for any of these is less than 1, set it to 1
+    if instrument_length_min and (instrument_length_min < 1):
+        instrument_length_min = 1
+    if instrument_length_max and (instrument_length_max < 1):
+        instrument_length_max = 1
+
+    # If min length is bigger than max length, set the min length to equal the max length
+    if instrument_length_min and instrument_length_max:
+        if instrument_length_min > instrument_length_max:
+            instrument_length_min = instrument_length_max
 
     # Lowercase sources and topics
     sources_set = {x.strip().lower() for x in sources if x.strip()}
@@ -419,7 +430,7 @@ def check_model_availability(model: dict) -> bool:
 
 
 def get_cached_text_vectors(
-    instruments: List[Instrument], model: dict, query: str | None = None
+        instruments: List[Instrument], model: dict, query: str | None = None
 ) -> dict[str, List[float]]:
     """
     Get cached text vectors.
@@ -476,55 +487,55 @@ def get_vectorisation_function_for_model(model: dict) -> Callable | None:
     vectorisation_function: Callable | None = None
 
     if (
-        model["framework"] == HUGGINGFACE_MINILM_L12_V2["framework"]
-        and model["model"] == HUGGINGFACE_MINILM_L12_V2["model"]
+            model["framework"] == HUGGINGFACE_MINILM_L12_V2["framework"]
+            and model["model"] == HUGGINGFACE_MINILM_L12_V2["model"]
     ):
         vectorisation_function = (
             hugging_face_embeddings.get_hugging_face_embeddings_minilm_l12_v2
         )
 
     elif (
-        model["framework"] == HUGGINGFACE_MPNET_BASE_V2["framework"]
-        and model["model"] == HUGGINGFACE_MPNET_BASE_V2["model"]
+            model["framework"] == HUGGINGFACE_MPNET_BASE_V2["framework"]
+            and model["model"] == HUGGINGFACE_MPNET_BASE_V2["model"]
     ):
         vectorisation_function = (
             hugging_face_embeddings.get_hugging_face_embeddings_mpnet_base_v2
         )
 
     elif (
-        model["framework"] == OPENAI_ADA_02["framework"]
-        and model["model"] == OPENAI_ADA_02["model"]
+            model["framework"] == OPENAI_ADA_02["framework"]
+            and model["model"] == OPENAI_ADA_02["model"]
     ):
         vectorisation_function = openai_embeddings.get_openai_embeddings_ada_02
     elif (
-        model["framework"] == OPENAI_3_LARGE["framework"]
-        and model["model"] == OPENAI_3_LARGE["model"]
+            model["framework"] == OPENAI_3_LARGE["framework"]
+            and model["model"] == OPENAI_3_LARGE["model"]
     ):
         vectorisation_function = openai_embeddings.get_openai_embeddings_3_large
     elif (
-        model["framework"] == AZURE_OPENAI_3_LARGE["framework"]
-        and model["model"] == AZURE_OPENAI_3_LARGE["model"]
+            model["framework"] == AZURE_OPENAI_3_LARGE["framework"]
+            and model["model"] == AZURE_OPENAI_3_LARGE["model"]
     ):
         vectorisation_function = (
             azure_openai_embeddings.get_azure_openai_embeddings_3_large
         )
     elif (
-        model["framework"] == AZURE_OPENAI_ADA_02["framework"]
-        and model["model"] == AZURE_OPENAI_ADA_02["model"]
+            model["framework"] == AZURE_OPENAI_ADA_02["framework"]
+            and model["model"] == AZURE_OPENAI_ADA_02["model"]
     ):
         vectorisation_function = (
             azure_openai_embeddings.get_azure_openai_embeddings_ada_02
         )
     elif (
-        model["framework"] == GOOGLE_GECKO_MULTILINGUAL["framework"]
-        and model["model"] == GOOGLE_GECKO_MULTILINGUAL["model"]
+            model["framework"] == GOOGLE_GECKO_MULTILINGUAL["framework"]
+            and model["model"] == GOOGLE_GECKO_MULTILINGUAL["model"]
     ):
         vectorisation_function = (
             google_embeddings.get_google_embeddings_gecko_multilingual
         )
     elif (
-        model["framework"] == GOOGLE_GECKO_003["framework"]
-        and model["model"] == GOOGLE_GECKO_003["model"]
+            model["framework"] == GOOGLE_GECKO_003["framework"]
+            and model["model"] == GOOGLE_GECKO_003["model"]
     ):
         vectorisation_function = google_embeddings.get_google_embeddings_gecko_003
 
@@ -532,7 +543,7 @@ def get_vectorisation_function_for_model(model: dict) -> Callable | None:
 
 
 def assign_missing_ids_to_instruments(
-    instruments: List[Instrument],
+        instruments: List[Instrument],
 ) -> List[Instrument]:
     """
     Assign missing IDs to instruments.

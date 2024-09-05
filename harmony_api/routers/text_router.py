@@ -356,11 +356,6 @@ def search_instruments(
     Search instruments.
     """
 
-    # If min length is bigger than max length, set the min length to equal the max length
-    if instrument_length_min and instrument_length_max:
-        if instrument_length_min > instrument_length_max:
-            instrument_length_min = instrument_length_max
-
     # Model
     model = search_instruments_body.parameters
     model_dict = model.model_dump(mode="json")
