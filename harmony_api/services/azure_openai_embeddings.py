@@ -15,9 +15,9 @@ settings = get_settings()
 API_VERSION = "2023-12-01-preview"  # This might change in the future
 
 # Check available models
-print("INFO:\t  Checking Azure OpenAI models...")
 HARMONY_API_AVAILABLE_AZURE_OPENAI_MODELS_LIST: List[str] = []
 if settings.AZURE_OPENAI_API_KEY and settings.AZURE_OPENAI_ENDPOINT:
+    print("INFO:\t  Checking Azure OpenAI models...")
     for harmony_api_azure_openai_model in HARMONY_API_AZURE_OPENAI_MODELS_LIST:
         try:
             AzureOpenAI(

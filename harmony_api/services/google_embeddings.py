@@ -26,9 +26,9 @@ if settings.GOOGLE_APPLICATION_CREDENTIALS:
     )
 
 # Check available models
-print("INFO:\t  Checking Google models...")
 HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST: List[str] = []
 if settings.GOOGLE_APPLICATION_CREDENTIALS:
+    print("INFO:\t  Checking Google models...")
     for harmony_api_google_model in HARMONY_API_GOOGLE_MODELS_LIST:
         try:
             TextEmbeddingModel.from_pretrained(harmony_api_google_model["model"])
