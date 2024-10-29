@@ -959,3 +959,27 @@ Array of object:
 
 
 
+## 📜 How do I cite Harmony?
+
+You can cite our [validation paper](https://harmonydata.ac.uk/ai-in-mental-health/bmc-psychiatry-paper/):
+
+ McElroy, Wood, Bond, Mulvenna, Shevlin, Ploubidis, Scopel Hoffmann, Moltrecht, [Using natural language processing to facilitate the harmonisation of mental health questionnaires: a validation study using real-world data](https://bmcpsychiatry.biomedcentral.com/articles/10.1186/s12888-024-05954-2#citeas). BMC Psychiatry 24, 530 (2024), https://doi.org/10.1186/s12888-024-05954-2
+ 
+
+A BibTeX entry for LaTeX users is
+
+{{< rawhtml >}}
+<pre>
+@article{mcelroy2024using,
+  title={Using natural language processing to facilitate the harmonisation of mental health questionnaires: a validation study using real-world data},
+  author={McElroy, Eoin and Wood, Thomas and Bond, Raymond and Mulvenna, Maurice and Shevlin, Mark and Ploubidis, George B and Hoffmann, Mauricio Scopel and Moltrecht, Bettina},
+  journal={BMC psychiatry},
+  volume={24},
+  number={1},
+  pages={530},
+  year={2024},
+  publisher={Springer}
+}
+</pre>
+{{< /rawhtml >}}
+
