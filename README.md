@@ -249,6 +249,19 @@ pip install harmonydata
 
 You can read the user guide at [./harmony_pypi_package/README.md](harmony_pypi_package/README.md).
 
+## Troubleshooting running Harmony API on port e.g. 8000 on local machine
+
+By default, Harmony API runs on port 8000 (see screenshot below)
+
+![./images/port.png](./images/port.png)
+
+If you are having errors running the API on the port it could be 
+
+1. a different program is already using port 8000
+2. you are trying to run on a forbidden port e.g. on port 80 which is private and your computer doesn't give permission to do this
+
+In particular on Windows, you may need to give some kind of permission to a Python program to use any port.
+
 ## Calling the Harmony API
 
 ### Parsing a raw file into an Instrument
