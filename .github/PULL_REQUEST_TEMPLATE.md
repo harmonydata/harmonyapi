@@ -1,6 +1,6 @@
 ## Description
 
-Please include a summary of the change and which issue is fixed. Please also include relevant context. List any dependencies that are required for this change.
+Please include a summary of the change and which issue is fixed. Please also include relevant context. List any dependencies that are required for this change. Ideally we avoid introducing any new third party dependencies in `requirements.txt` and `pyproject.toml` unless absolutely necessary, because this makes the project more susceptible to breaking whenever a third party library is updated. The "master list" of third party dependencies is in the [Python library](https://github.com/harmonydata/harmony).
 
 #### Fixes # (issue)
 
@@ -28,7 +28,7 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 
 ## Checklist
 
-- [ ] My code follows the style guidelines of this project
+- [ ] My code follows the style guidelines of this project.  I have applied a Linter (recommended: Pycharm's code formatter) to make my whitespace consistent with the rest of the project.
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
