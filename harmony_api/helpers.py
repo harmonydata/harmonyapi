@@ -419,7 +419,7 @@ def check_model_availability(model: dict) -> bool:
 
     # Google
     elif model["framework"] == "google":
-        if not settings.GOOGLE_APPLICATION_CREDENTIALS:
+        if not google_embeddings.GOOGLE_APPLICATION_CREDENTIALS_DICT:
             return False
 
         # Check model

@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import vertexai
 from google.api_core.exceptions import NotFound
@@ -14,20 +15,32 @@ from harmony_api.core.settings import get_settings
 
 settings = get_settings()
 
-# Authenticate Vertex AI with Google service account
+# Load GOOGLE_APPLICATION_CREDENTIALS as a dictionary
+GOOGLE_APPLICATION_CREDENTIALS_DICT: dict | None = None
 if settings.GOOGLE_APPLICATION_CREDENTIALS:
-    credentials = Credentials.from_service_account_info(
-        settings.GOOGLE_APPLICATION_CREDENTIALS,
-        scopes=["https://www.googleapis.com/auth/cloud-platform"],
-    )
-    vertexai.init(
-        project=settings.GOOGLE_APPLICATION_CREDENTIALS["project_id"],
-        credentials=credentials,
-    )
+    try:
+        GOOGLE_APPLICATION_CREDENTIALS_DICT: dict = json.loads(settings.GOOGLE_APPLICATION_CREDENTIALS)
+    except (Exception,) as e:
+        print(f"The env GOOGLE_APPLICATION_CREDENTIALS is not a valid JSON, Google models will be unavailable. Error: {str(e)}")
+
+# Authenticate Vertex AI with Google service account
+if GOOGLE_APPLICATION_CREDENTIALS_DICT:
+    try:
+        credentials = Credentials.from_service_account_info(
+            GOOGLE_APPLICATION_CREDENTIALS_DICT,
+            scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
+        vertexai.init(
+            project=GOOGLE_APPLICATION_CREDENTIALS_DICT["project_id"],
+            credentials=credentials,
+        )
+    except (Exception,) as e:
+        GOOGLE_APPLICATION_CREDENTIALS_DICT = None
+        print(f"Error loading Google credentials: {str(e)}")
 
 # Check available models
 HARMONY_API_AVAILABLE_GOOGLE_MODELS_LIST: List[str] = []
-if settings.GOOGLE_APPLICATION_CREDENTIALS:
+if GOOGLE_APPLICATION_CREDENTIALS_DICT:
     print("INFO:\t  Checking Google models...")
     for harmony_api_google_model in HARMONY_API_GOOGLE_MODELS_LIST:
         try:
