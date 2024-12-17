@@ -924,7 +924,7 @@ instrument_id string Unique identifier for the instrument (UUID-4)
 instrument_name string DEFAULT:Untitled instrument
 Human-readable name of the instrument
 ```
-
+```
 file_name string DEFAULT:Untitled file
 The name of the input file
 file_type enum ALLOWED:pdf, xlsx, txt, docx
@@ -968,6 +968,7 @@ vectors* [{
 Array of object:
 }]
 }
+```
 
 
 
