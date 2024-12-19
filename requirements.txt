@@ -9,7 +9,7 @@ lxml==5.3.0
 langdetect==1.0.9
 XlsxWriter==3.0.9
 openpyxl==3.1.2
-sentence-transformers==2.2.2
+sentence-transformers==3.0.0
 wget==3.2
 openai==1.30.2
 vertexai==1.49.0
