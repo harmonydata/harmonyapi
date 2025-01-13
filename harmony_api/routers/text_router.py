@@ -196,6 +196,7 @@ def match(
         _model_is_available=Depends(dependencies.model_from_match_body_is_available),
         include_catalogue_matches: bool = Query(default=False),
         catalogue_sources: List[str] = Query(default=[]),
+        is_negate: bool = True
 ) -> MatchResponse:
     """
     Match instruments.
@@ -270,6 +271,7 @@ def match(
         mhc_embeddings=mhc_embeddings,
         texts_cached_vectors=texts_cached_vectors,
         vectorisation_function=vectorisation_function,
+        is_negate=is_negate
     )
 
     # Get catalogue matches
@@ -426,4 +428,3 @@ def search_instruments(
         ]
 
         return SearchInstrumentsResponse(instruments=instruments)
-
