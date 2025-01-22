@@ -258,12 +258,7 @@ def match(
             )
 
     # Match
-    (
-        questions,
-        matches,
-        query_similarity,
-        new_text_vectors,
-    ) = match_instruments_with_function(
+    match_response_from_library = match_instruments_with_function(
         instruments=instruments,
         query=query,
         mhc_questions=mhc_questions,
@@ -286,24 +281,27 @@ def match(
 
     # Add new vectors to cache
     vectors_cache.add(
-        new_text_vectors=new_text_vectors,
+        new_text_vectors=match_response_from_library.new_vectors_dict,
         model_name=model.model,
         framework=model.framework
     )
 
     # List of matches
-    matches_jsonable = matches.tolist()
+    matches_jsonable = match_response_from_library.similarity_with_polarity.tolist()
 
     # Query similarity
-    if query_similarity is not None:
-        query_similarity = query_similarity.tolist()
+    if match_response_from_library.query_similarity is not None:
+        query_similarity = match_response_from_library.query_similarity.tolist()
+    else:
+        query_similarity = None
 
     return MatchResponse(
         instruments=instruments,
-        questions=questions,
+        questions=match_response_from_library.questions,
         matches=matches_jsonable,
         query_similarity=query_similarity,
         closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
+        instrument_to_instrument_similarities=match_response_from_library.instrument_to_instrument_similarities
     )
 
 

@@ -62,7 +62,7 @@ response_no_negation = requests.post(endpoint + "?is_negate=false", headers=head
 class TestMatch(unittest.TestCase):
 
     def test_negation_instrument_correct_size_dictionary_response(self):
-        self.assertEqual(5, len(response.json()))
+        self.assertEqual(6, len(response.json()))
 
     def test_negation_instrument_first_question_conserved(self):
         self.assertEqual("I feel nervous", response.json()["questions"][0]["question_text"])
