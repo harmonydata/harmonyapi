@@ -125,9 +125,9 @@ endpoint = 'https://api.harmonydata.ac.uk/text/match'
 response = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_7)
 
 
-class TestMatchMhcRemote(unittest.TestCase):
+class TestMatchMhcLocal(unittest.TestCase):
 
-    def test_match_mhc_remote(self):
+    def test_match_mhc_local(self):
         response_dict = response.json()
         self.assertEqual(4, len(response_dict["questions"]))
         self.assertEqual("anxiety", response_dict["questions"][0]["topics_auto"][0])

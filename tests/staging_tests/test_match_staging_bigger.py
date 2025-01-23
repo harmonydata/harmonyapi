@@ -1474,11 +1474,10 @@ endpoint = 'https://harmonystagingtmp.azurewebsites.net/text/match'
 
 response = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_7)
 
-
 class TestMatchBiggerPayload(unittest.TestCase):
 
     def test_big_match_command(self):
-        self.assertEqual(5, len(response.json()))
+        self.assertEqual(7, len(response.json()))
 
 
 if __name__ == '__main__':
