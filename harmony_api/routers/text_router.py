@@ -301,7 +301,8 @@ def match(
         matches=matches_jsonable,
         query_similarity=query_similarity,
         closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
-        instrument_to_instrument_similarities=match_response_from_library.instrument_to_instrument_similarities
+        instrument_to_instrument_similarities=match_response_from_library.instrument_to_instrument_similarities,
+        clusters=match_response_from_library.clusters
     )
 
 

@@ -123,7 +123,7 @@ response = requests.post(endpoint, headers=headers, json=json_data_to_match_gad_
 class TestMatch(unittest.TestCase):
 
     def test_gad_7_correct_size_dictionary_response(self):
-        self.assertEqual(6, len(response.json()))
+        self.assertEqual(7, len(response.json()))
 
     def test_gad_7_first_question_conserved(self):
         self.assertEqual("Feeling nervous, anxious, or on edge", response.json()["questions"][0]["question_text"])
