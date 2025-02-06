@@ -16,5 +16,3 @@ with Diagram("Harmony repositories", show=False):
     browser = Tablet("Front end repository\ngithub.com/\nharmonydata/\napp")
     r = R("R library\ngithub.com/\nharmonydata/\nharmony_r")
 
-    py << fastapi << browser
-    fastapi << r
