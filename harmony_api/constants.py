@@ -36,7 +36,10 @@ HUGGINGFACE_MPNET_BASE_V2 = {
     "framework": "huggingface",
     "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
 }
-
+HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1 = {
+    "framework": "huggingface",
+    "model": "harmonydata/mental_health_harmonisation_1",
+}
 
 # OpenAI models
 OPENAI_ADA_02 = {
@@ -48,7 +51,6 @@ OPENAI_3_LARGE = {
     "model": "text-embedding-3-large",
 }
 
-
 # Google models
 GOOGLE_GECKO_003 = {
     "framework": "google",
@@ -58,7 +60,6 @@ GOOGLE_GECKO_MULTILINGUAL = {
     "framework": "google",
     "model": "textembedding-gecko-multilingual",
 }
-
 
 # Azure OpenAI models
 AZURE_OPENAI_3_LARGE = {
@@ -74,6 +75,7 @@ AZURE_OPENAI_ADA_02 = {
 ALL_HARMONY_API_MODELS: list[dict] = [
     HUGGINGFACE_MINILM_L12_V2,
     HUGGINGFACE_MPNET_BASE_V2,
+    HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1,
     OPENAI_ADA_02,
     OPENAI_3_LARGE,
     GOOGLE_GECKO_003,
@@ -85,6 +87,7 @@ ALL_HARMONY_API_MODELS: list[dict] = [
 HARMONY_API_HUGGING_FACE_MODELS_LIST = [
     HUGGINGFACE_MINILM_L12_V2,
     HUGGINGFACE_MPNET_BASE_V2,
+    HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1
 ]
 
 HARMONY_API_GOOGLE_MODELS_LIST = [GOOGLE_GECKO_003, GOOGLE_GECKO_MULTILINGUAL]

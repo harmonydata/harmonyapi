@@ -47,7 +47,7 @@ from harmony_api.constants import (
     HUGGINGFACE_MPNET_BASE_V2,
     HUGGINGFACE_MINILM_L12_V2,
     AZURE_OPENAI_ADA_02,
-    AZURE_OPENAI_3_LARGE,
+    AZURE_OPENAI_3_LARGE, HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1,
 )
 from harmony_api.core.settings import get_settings
 from harmony_api.services import azure_openai_embeddings
@@ -500,6 +500,14 @@ def get_vectorisation_function_for_model(model: dict) -> Callable | None:
     ):
         vectorisation_function = (
             hugging_face_embeddings.get_hugging_face_embeddings_mpnet_base_v2
+        )
+
+    elif (
+            model["framework"] == HUGGINGFACE_MPNET_BASE_V2["framework"]
+            and model["model"] == HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1["model"]
+    ):
+        vectorisation_function = (
+            hugging_face_embeddings.get_hugging_face_embeddings_harmonydata_mental_health_harmonisation_1
         )
 
     elif (
