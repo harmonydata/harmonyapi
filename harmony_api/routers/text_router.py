@@ -48,6 +48,7 @@ from harmony.schemas.responses.text import (
     SearchInstrumentsResponse,
 )
 
+from harmony.schemas.enums.clustering_algorithms import ClusteringAlgorithm
 from harmony_api import helpers, dependencies, constants
 from harmony_api import http_exceptions
 from harmony_api.core.settings import get_settings
@@ -188,6 +189,7 @@ def parse_instruments(
     return instruments
 
 
+
 @router.post(
     path="/match", response_model=MatchResponse, status_code=status.HTTP_200_OK, response_model_exclude_none=True
 )
@@ -196,7 +198,8 @@ def match(
         _model_is_available=Depends(dependencies.model_from_match_body_is_available),
         include_catalogue_matches: bool = Query(default=False),
         catalogue_sources: List[str] = Query(default=[]),
-        is_negate: bool = True
+        is_negate: bool = True,
+        clustering_algorithm: ClusteringAlgorithm = ClusteringAlgorithm.affinity_propagation
 ) -> MatchResponse:
     """
     Match instruments.
@@ -266,7 +269,8 @@ def match(
         mhc_embeddings=mhc_embeddings,
         texts_cached_vectors=texts_cached_vectors,
         vectorisation_function=vectorisation_function,
-        is_negate=is_negate
+        is_negate=is_negate,
+        clustering_algorithm=clustering_algorithm
     )
 
     # Get catalogue matches
