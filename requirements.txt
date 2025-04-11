@@ -11,8 +11,8 @@ XlsxWriter==3.0.9
 openpyxl==3.1.2
 sentence-transformers==3.4.1
 wget==3.2
-openai==1.30.2
-vertexai==1.49.0
+openai==1.72.0
+vertexai==1.71.1
 numpy==1.26.4
 sklearn-crfsuite==0.5.0
 scikit-learn==1.5.0
