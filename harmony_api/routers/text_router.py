@@ -189,7 +189,6 @@ def parse_instruments(
     return instruments
 
 
-
 @router.post(
     path="/match", response_model=MatchResponse, status_code=status.HTTP_200_OK, response_model_exclude_none=True
 )
@@ -299,6 +298,9 @@ def match(
     else:
         query_similarity = None
 
+    # Response options similarity
+    response_options_similarity = match_response_from_library.response_options_similarity.tolist()
+
     return MatchResponse(
         instruments=instruments,
         questions=match_response_from_library.questions,
@@ -306,7 +308,8 @@ def match(
         query_similarity=query_similarity,
         closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
         instrument_to_instrument_similarities=match_response_from_library.instrument_to_instrument_similarities,
-        clusters=match_response_from_library.clusters
+        clusters=match_response_from_library.clusters,
+        response_options_similarity=response_options_similarity
     )
 
 
