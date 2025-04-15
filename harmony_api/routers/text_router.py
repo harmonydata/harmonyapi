@@ -263,6 +263,7 @@ def match(
     match_response_from_library = match_instruments_with_function(
         instruments=instruments,
         query=query,
+        topics=match_body.topics,
         mhc_questions=mhc_questions,
         mhc_all_metadatas=mhc_all_metadata,
         mhc_embeddings=mhc_embeddings,
