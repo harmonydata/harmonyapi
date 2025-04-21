@@ -4,4 +4,4 @@
 	branch = main
 [submodule "harmony"]
 	path = harmony
-	url = https://github.com/AlexNikic/harmony.git
+	url = https://github.com/harmonydata/harmony
