@@ -233,9 +233,9 @@ docker run -d -p 80:80 -p 3000:3000 -e GOOGLE_APPLICATION_CREDENTIALS=xxx -e AZU
 
 If you are not running with Docker, you can run the individual components of the Harmony API separately.
 
-Architecture of the Harmony implementation on Azure with FastAPI:
+Architecture of the Harmony implementation as it runs with FastAPI on an on-premises server (the current setup) or on an alternative e.g. a cloud server such as Azure or EC2:
 
-![Screenshot](images/harmony_architecture_azure.png)
+![Screenshot](images/harmony_architecture.png)
 
 # Getting started with the Harmony Python library
 
@@ -443,13 +443,6 @@ the matrix of matches between all items), and `query_similarity` (the degree of 
 }
 ```
 
-## Alternative serverless deployment on AWS Lambda
-
-This repository also contains code for an alternative serverless deployment on AWS Lambda. The deployment has been
-divided into four AWS Lambda functions, managed by Terraform. Please refer to folder `serverless_deployment` for
-details.
-
-![Screenshot](images/deployed_harmony_architecture.png)
 
 # License
 
