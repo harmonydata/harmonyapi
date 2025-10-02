@@ -47,6 +47,7 @@ from harmony.schemas.responses.text import (
     CacheResponse,
     SearchInstrumentsResponse,
 )
+from harmony.util.url_loader import load_instruments_from_url
 
 from harmony.schemas.enums.clustering_algorithms import ClusteringAlgorithm
 from harmony_api import helpers, dependencies, constants
@@ -435,3 +436,9 @@ def search_instruments(
         ]
 
         return SearchInstrumentsResponse(instruments=instruments)
+
+@router.get(
+    path="/get_instruments_from_url", status_code=status.HTTP_200_OK, response_model_exclude_none=True
+)
+def get_instruments_from_url(url: str) -> List[Instrument]:
+    return load_instruments_from_url(url)
