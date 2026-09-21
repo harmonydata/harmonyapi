@@ -30,6 +30,7 @@ from hashlib import sha256
 from typing import List
 
 from harmony.schemas.requests.text import Instrument
+from pydantic import ValidationError
 
 from harmony_api import constants
 from harmony_api.utils.singleton_meta import SingletonMeta
@@ -67,10 +68,38 @@ class InstrumentsCache(metaclass=SingletonMeta):
         #  Dict to instruments
         cache_parsed: dict[str, List[Instrument]] = {}
         for key, value in cache.items():
-            instruments = [Instrument.model_validate(x) for x in value]
+            try:
+                instruments = [
+                    Instrument.model_validate(self.__normalise_instrument_dict(x))
+                    for x in value
+                ]
+            except (ValidationError, TypeError, AttributeError) as e:
+                # A corrupt entry must never take the whole API down at
+                # startup (restart=always would crash loop). Drop it and
+                # let it be recomputed on the next request.
+                print(f"WARNING:  Skipping invalid instruments cache entry {key}: {e}")
+                continue
             cache_parsed[key] = instruments
 
         self.__cache = cache_parsed
+
+    @staticmethod
+    def __normalise_instrument_dict(instrument: dict) -> dict:
+        """
+        Coerce fields that the Instrument/Question schemas declare as
+        non-Optional lists with a None default. model_dump() writes them
+        as null, but model_validate() rejects null, so a saved cache
+        would otherwise fail to load on the next start.
+        """
+
+        if instrument.get("closest_catalogue_instrument_matches") is None:
+            instrument["closest_catalogue_instrument_matches"] = []
+
+        for question in instrument.get("questions") or []:
+            if question.get("seen_in_catalogue_instruments") is None:
+                question["seen_in_catalogue_instruments"] = []
+
+        return instrument
 
     def set(self, key: str, value: List[Instrument]):
         """
