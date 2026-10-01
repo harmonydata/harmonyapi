@@ -48,9 +48,11 @@ from harmony_api.constants import (
     HUGGINGFACE_MINILM_L12_V2,
     AZURE_OPENAI_ADA_02,
     AZURE_OPENAI_3_LARGE, HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1,
+    DELOSIS_E5_BASE,
 )
 from harmony_api.core.settings import get_settings
 from harmony_api.services import azure_openai_embeddings
+from harmony_api.services import delosis_e5_embeddings
 from harmony_api.services import google_embeddings
 from harmony_api.services import hugging_face_embeddings
 from harmony_api.services import openai_embeddings
@@ -397,6 +399,12 @@ def check_model_availability(model: dict) -> bool:
     Check model availability.
     """
 
+    # E5 is served over HTTP, so it is only available when the
+    # embedder URL is configured. Checked before the generic Hugging Face
+    # branch because it shares that framework name.
+    if model["model"] == DELOSIS_E5_BASE["model"]:
+        return delosis_e5_embeddings.is_configured()
+
     # Hugging Face
     if model["framework"] == "huggingface":
         # No checks required, always return True at the end of this function
@@ -509,6 +517,12 @@ def get_vectorisation_function_for_model(model: dict) -> Callable | None:
         vectorisation_function = (
             hugging_face_embeddings.get_hugging_face_embeddings_harmonydata_mental_health_harmonisation_1
         )
+
+    elif (
+            model["framework"] == DELOSIS_E5_BASE["framework"]
+            and model["model"] == DELOSIS_E5_BASE["model"]
+    ):
+        vectorisation_function = delosis_e5_embeddings.get_delosis_e5_embeddings
 
     elif (
             model["framework"] == OPENAI_ADA_02["framework"]

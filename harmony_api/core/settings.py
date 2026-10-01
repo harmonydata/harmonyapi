@@ -44,6 +44,17 @@ class Settings(BaseSettings):
         description="A JSON string is expected here, this is the content of credentials.json.",
         default=None
     )
+    # Base URL (or full /text/embed URL) of the delosis-embedding-api
+    # container that serves intfloat/multilingual-e5-base. When unset the E5 model
+    # is listed but reported as unavailable, so stock deployments are unaffected.
+    HARMONY_E5_EMBEDDER_URL: str | None = Field(
+        description="URL of the Delosis E5 embedding service, e.g. http://delosis-embedding-api:8000",
+        default=None,
+    )
+    HARMONY_E5_EMBEDDER_TOKEN: str | None = Field(
+        description="Optional bearer token for the Delosis E5 embedding service.",
+        default=None,
+    )
 
 
 class DevSettings(Settings):

@@ -41,6 +41,16 @@ HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1 = {
     "model": "harmonydata/mental_health_harmonisation_1",
 }
 
+# Multilingual E5 served by the delosis-embedding-api container
+# over HTTP (see services/delosis_e5_embeddings.py). Kept under the
+# "huggingface" framework because that is what the model is; it is simply not
+# loaded in-process. Only advertised as available when the embedder URL is
+# configured (HARMONY_E5_EMBEDDER_URL).
+DELOSIS_E5_BASE = {
+    "framework": "huggingface",
+    "model": "intfloat/multilingual-e5-base",
+}
+
 # OpenAI models
 OPENAI_ADA_02 = {
     "framework": "openai",
@@ -76,6 +86,7 @@ ALL_HARMONY_API_MODELS: list[dict] = [
     HUGGINGFACE_MINILM_L12_V2,
     HUGGINGFACE_MPNET_BASE_V2,
     HUGGINGFACE_MENTAL_HEALTH_HARMONISATION_1,
+    DELOSIS_E5_BASE,
     OPENAI_ADA_02,
     OPENAI_3_LARGE,
     GOOGLE_GECKO_003,
