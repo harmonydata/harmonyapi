@@ -32,10 +32,6 @@ import re
 
 from fastapi import APIRouter, Body, status, Depends, Query
 from harmony.matching.default_matcher import match_instruments_with_function
-from harmony.matching.matcher import (
-    match_instruments_with_catalogue_instruments,
-    match_query_with_catalogue_instruments,
-)
 from harmony.parsing.wrapper_all_parsers import convert_files_to_instruments
 from harmony.schemas.requests.text import (
     RawFile,
@@ -63,18 +59,6 @@ router = APIRouter(prefix="/text")
 # Cache
 instruments_cache = InstrumentsCache()
 vectors_cache = VectorsCache()
-
-# Catalogue data
-print("INFO:\t  Loading catalogue data...")
-catalogue_data_default = helpers.get_catalogue_data_default()
-catalogue_data_embeddings_for_model = {}
-for harmony_api_model in constants.ALL_HARMONY_API_MODELS:
-    catalogue_embeddings_for_model = helpers.get_catalogue_data_model_embeddings(
-        harmony_api_model
-    )
-    catalogue_data_embeddings_for_model[harmony_api_model["model"]] = (
-        catalogue_embeddings_for_model
-    )
 
 
 @router.post(path="/parse", response_model_exclude_none=True)
@@ -201,8 +185,6 @@ def parse_instruments(
 def match(
         match_body: MatchBody,
         _model_is_available=Depends(dependencies.model_from_match_body_is_available),
-        include_catalogue_matches: bool = Query(default=False),
-        catalogue_sources: List[str] = Query(default=[]),
         is_negate: bool = True,
         clustering_algorithm: ClusteringAlgorithm = ClusteringAlgorithm.affinity_propagation
 ) -> MatchResponse:
@@ -244,26 +226,6 @@ def match(
             "Could not find a vectorisation function for model."
         )
 
-    # Currently only the model "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" is supported for
-    # catalogue matches.
-    if model_dict["model"] != constants.HUGGINGFACE_MINILM_L12_V2["model"]:
-        include_catalogue_matches = False
-
-    # Catalogue data
-    catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
-    if catalogue_embeddings.size == 0:
-        # If the embeddings are not available, do not include catalogue matches
-        include_catalogue_matches = False
-    catalogue_data = {}
-    if include_catalogue_matches:
-        catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
-        catalogue_data.update(catalogue_data_default)
-
-        # Filter catalogue data
-        if catalogue_sources:
-            catalogue_data = helpers.filter_catalogue_data(
-                catalogue_data=copy.deepcopy(catalogue_data), sources=catalogue_sources
-            )
 
     # Match
     match_response_from_library = match_instruments_with_function(
@@ -278,16 +240,6 @@ def match(
         is_negate=is_negate,
         clustering_algorithm=clustering_algorithm
     )
-
-    # Get catalogue matches
-    closest_catalogue_instrument_matches = []
-    if include_catalogue_matches:
-        instruments, closest_catalogue_instrument_matches = match_instruments_with_catalogue_instruments(
-            instruments=instruments,
-            catalogue_data=catalogue_data,
-            vectorisation_function=vectorisation_function,
-            texts_cached_vectors=texts_cached_vectors,
-        )
 
     # Add new vectors to cache
     vectors_cache.add(
@@ -313,7 +265,6 @@ def match(
         questions=match_response_from_library.questions,
         matches=matches_jsonable,
         query_similarity=query_similarity,
-        closest_catalogue_instrument_matches=closest_catalogue_instrument_matches,
         instrument_to_instrument_similarities=match_response_from_library.instrument_to_instrument_similarities,
         clusters=match_response_from_library.clusters,
         response_options_similarity=response_options_similarity
@@ -351,93 +302,3 @@ def get_cache() -> CacheResponse:
         instruments=instruments_list,
         vectors=vectors_list,
     )
-
-
-@router.post(
-    path="/search_instruments",
-    response_model=SearchInstrumentsResponse,
-    status_code=status.HTTP_200_OK,
-    response_model_exclude_none=True,
-)
-def search_instruments(
-        search_instruments_body: SearchInstrumentsBody = SearchInstrumentsBody(),
-        query: str | None = Query(default=None),
-        instrument_length_min: int = Query(default=5, gt=0),
-        instrument_length_max: int = Query(default=10, gt=0),
-        sources: List[str] = Query(default=[]),
-        topics: List[str] = Query(default=[]),
-) -> SearchInstrumentsResponse:
-    """
-    Search instruments.
-    """
-
-    # Model
-    model = search_instruments_body.parameters
-    model_dict = model.model_dump(mode="json")
-
-    # Get vect function
-    vectorisation_function = helpers.get_vectorisation_function_for_model(
-        model=model_dict
-    )
-    if not vectorisation_function:
-        raise http_exceptions.CouldNotFindResourceHTTPException(
-            "Could not find a vectorisation function for model."
-        )
-
-    # Currently only the model "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" is supported for
-    # searching instruments.
-    if model_dict["model"] != constants.HUGGINGFACE_MINILM_L12_V2["model"]:
-        return SearchInstrumentsResponse(instruments=[])
-
-    # Catalogue data
-    catalogue_embeddings = catalogue_data_embeddings_for_model[model_dict["model"]]
-    if catalogue_embeddings.size == 0:
-        return SearchInstrumentsResponse(instruments=[])
-    catalogue_data = {"all_embeddings_concatenated": catalogue_embeddings}
-    catalogue_data.update(catalogue_data_default)
-
-    # Filter catalogue data
-    if sources or topics or instrument_length_min or instrument_length_max:
-        catalogue_data = helpers.filter_catalogue_data(
-            catalogue_data=copy.deepcopy(catalogue_data),
-            sources=sources,
-            topics=topics,
-            instrument_length_min=instrument_length_min,
-            instrument_length_max=instrument_length_max,
-        )
-
-    # Return up to 100 instruments
-    max_results = 100
-
-    # Query is provided: Match the query with the catalogue instruments
-    if query:
-        texts_cached_vectors = helpers.get_cached_text_vectors(
-            instruments=[], query=query, model=model_dict
-        )
-
-        match_result = match_query_with_catalogue_instruments(
-            query=query,
-            catalogue_data=catalogue_data,
-            vectorisation_function=vectorisation_function,
-            texts_cached_vectors=texts_cached_vectors,
-            max_results=max_results,
-        )
-
-        # Add new vectors to cache
-        vectors_cache.add(
-            new_text_vectors=match_result["new_text_vectors"],
-            model_name=model.model,
-            framework=model.framework,
-        )
-
-        return SearchInstrumentsResponse(instruments=match_result["instruments"])
-
-    # No query provided: Get the first n catalogue instruments
-    else:
-        catalogue_instruments = catalogue_data["all_instruments"][:max_results]
-        instruments = [
-            Instrument.model_validate(catalogue_instrument)
-            for catalogue_instrument in catalogue_instruments
-        ]
-
-        return SearchInstrumentsResponse(instruments=instruments)
