@@ -27,7 +27,7 @@ SOFTWARE.
 
 import pdfkit
 
-doc_html = "1. How long has it been since you lived in permanent stable housing?<ul><li>0-6 months</li><li>6-11 months</li><li>1 year</li><li>2 years</li><li>3 years</li><li>4 years or more</ul>"
+doc_html = "1. How long has it been since you lived in permanent stable housing?<ul><li>0-6 months</li><li>6-11 months</li><li>1 year</li><li>2 years</li><li>3 years</li><li>4 years or more</li></ul>"
 pdf_bytes = pdfkit.from_string(doc_html)
 print(len(pdf_bytes))
 with open("example_tiny_pdf_file_with_response_options.pdf", "wb") as binary_file:
